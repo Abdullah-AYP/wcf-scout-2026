@@ -8,6 +8,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const data = await getPlayerData();
+    res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=1800");
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({

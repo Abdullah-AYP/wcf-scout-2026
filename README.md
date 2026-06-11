@@ -36,13 +36,13 @@ The app loads players from:
 /api/players
 ```
 
-That endpoint currently uses `data/sample-players.json` unless you set:
+That endpoint defaults to FIFA's public Fantasy feed:
 
 ```text
-WCF_DATA_BASE_URL=https://your-real-wcf-data-base-url/
+https://play.fifa.com/json/fantasy/
 ```
 
-The base URL should expose:
+It expects the base URL to expose:
 
 ```text
 players.json
@@ -50,7 +50,21 @@ squads.json
 rounds.json
 ```
 
-I checked FIFA's public Play Zone bundle and it does expose Fantasy Classic JSON file names, but the currently reachable `https://play.fifa.com/json/players.json` data looked stale rather than 2026 men's World Cup data. The adapter intentionally falls back to sample data instead of silently showing stale players. If you really want to inspect/use that stale public data during testing, set:
+The adapter normalizes the live FIFA data into the app's player selector, including player names, positions, teams, prices, ownership, status, and readable next fixtures. If FIFA blocks or changes that feed, `/api/players` falls back to `data/sample-players.json` instead of showing a broken app.
+
+To override the feed during testing:
+
+```text
+WCF_DATA_BASE_URL=https://your-real-wcf-data-base-url/
+```
+
+To force the local 13-player sample file:
+
+```text
+WCF_USE_SAMPLE_DATA=true
+```
+
+If you really want to inspect/use stale public data during testing, set:
 
 ```text
 WCF_ALLOW_STALE_DATA=true
