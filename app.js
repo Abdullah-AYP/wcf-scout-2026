@@ -46,9 +46,11 @@
   const dataSourceLine = document.getElementById("data-source-line");
   const diffSearch = document.getElementById("differential-player-search");
   const diffPosition = document.getElementById("differential-position-filter");
+  const diffCountry = document.getElementById("differential-country-filter");
   const diffResults = document.getElementById("differential-player-results");
   const squadSearch = document.getElementById("squad-player-search");
   const squadPosition = document.getElementById("squad-position-filter");
+  const squadCountry = document.getElementById("squad-country-filter");
   const squadResults = document.getElementById("squad-player-results");
   const selectedXiList = document.getElementById("selected-xi-list");
   const xiCount = document.getElementById("xi-count");
@@ -102,10 +104,12 @@
 
     diffSearch.addEventListener("input", () => renderPlayerResults("differential"));
     diffPosition.addEventListener("change", () => renderPlayerResults("differential"));
+    diffCountry.addEventListener("change", () => renderPlayerResults("differential"));
     diffResults.addEventListener("click", handlePlayerResultClick);
 
     squadSearch.addEventListener("input", () => renderPlayerResults("squad"));
     squadPosition.addEventListener("change", () => renderPlayerResults("squad"));
+    squadCountry.addEventListener("change", () => renderPlayerResults("squad"));
     squadResults.addEventListener("click", handlePlayerResultClick);
     selectedXiList.addEventListener("click", handleXiClick);
     if (lineupPitch) lineupPitch.addEventListener("click", handleXiClick);
@@ -257,6 +261,7 @@
 
     try {
       hydrateSquad();
+      populateCountryFilters(data.teams);
       renderSelectedXi();
       renderPlayerResults("differential");
       renderPlayerResults("squad");
@@ -294,18 +299,26 @@
 
   function renderPlayerResults(target) {
     const config = target === "squad"
-      ? { search: squadSearch, position: squadPosition, container: squadResults, action: "Add" }
-      : { search: diffSearch, position: diffPosition, container: diffResults, action: "Spotlight" };
+      ? { search: squadSearch, position: squadPosition, country: squadCountry, container: squadResults, action: "Add" }
+      : { search: diffSearch, position: diffPosition, country: diffCountry, container: diffResults, action: "Spotlight" };
 
-    const query = config.search.value.trim().toLowerCase();
+    const query = normalizeSearch(config.search.value.trim());
     const position = config.position.value;
+    const country = config.country.value;
     const players = state.players
       .filter((player) => !position || player.position === position)
+      .filter((player) => !country || player.team === country)
       .filter((player) => {
         if (!query) return true;
-        return [player.name, player.shortName, player.team, player.teamAbbr, player.position]
-          .filter(Boolean)
-          .some((value) => String(value).toLowerCase().includes(query));
+        const haystack = normalizeSearch([
+          player.name,
+          player.shortName,
+          ...(Array.isArray(player.aliases) ? player.aliases : []),
+          player.team,
+          player.teamAbbr,
+          player.position
+        ].filter(Boolean).join(" "));
+        return query.split(/\s+/).filter(Boolean).every((token) => haystack.includes(token));
       })
       .sort((a, b) => {
         if (target === "squad") {
@@ -327,6 +340,23 @@
     config.container.innerHTML = players.map((player) => renderPlayerOption(player, target, config.action)).join("");
   }
 
+  function populateCountryFilters(sourceTeams = []) {
+    const teams = Array.from(new Set(
+      (Array.isArray(sourceTeams) && sourceTeams.length ? sourceTeams : state.players.map((player) => player.team))
+        .filter(Boolean)
+    )).sort((a, b) => String(a).localeCompare(String(b)));
+
+    [diffCountry, squadCountry].forEach((select) => {
+      if (!select) return;
+      const currentValue = select.value;
+      select.innerHTML = [
+        '<option value="">All countries</option>',
+        ...teams.map((team) => `<option value="${escapeHtml(team)}">${escapeHtml(team)}</option>`)
+      ].join("");
+      select.value = teams.includes(currentValue) ? currentValue : "";
+    });
+  }
+
   function renderPlayerOption(player, target, action) {
     const selected = state.selectedXi.some((item) => item.id === player.id);
     const addState = target === "squad" ? playerAddState(player) : { ok: true, label: action };
@@ -346,6 +376,7 @@
           <span class="mini-pill">${escapeHtml(player.position)}</span>
           <span class="mini-pill">${escapeHtml(player.price || "Price TBC")}</span>
           <span class="mini-pill ${Number(player.ownership) < 5 ? "green" : ""}">${escapeHtml(ownershipText(player.ownership))}</span>
+          ${player.aliases?.length ? `<span class="mini-pill gold">aka ${escapeHtml(player.aliases[0])}</span>` : ""}
           ${target === "squad" && player.status && player.status !== "playing" ? `<span class="mini-pill red">${escapeHtml(player.status)}</span>` : ""}
           <button class="mini-action player-action ${!addState.ok && target === "squad" ? "muted" : ""}" type="button" data-player-action ${disabled ? "disabled" : ""}>${escapeHtml(actionText)}</button>
         </span>
@@ -1005,6 +1036,13 @@
     return String(value || "wcf").split("").reduce((hash, char) => {
       return ((hash << 5) - hash + char.charCodeAt(0)) >>> 0;
     }, 0);
+  }
+
+  function normalizeSearch(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
   }
 
   function stageLabel(stage) {

@@ -418,7 +418,7 @@ h3 {
 
 .picker-controls {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px;
+  grid-template-columns: minmax(180px, 1fr) 132px minmax(150px, 0.55fr);
   gap: 12px;
 }
 
@@ -559,6 +559,11 @@ h3 {
 .mini-pill.green {
   background: var(--green-soft);
   color: var(--green-dark);
+}
+
+.mini-pill.gold {
+  background: var(--gold-soft);
+  color: var(--gold-text);
 }
 
 .mini-pill.red,
