@@ -120,16 +120,17 @@
         <section class="tool-panel" id="captaincy-panel" aria-labelledby="captaincy-title">
           <div class="panel-head">
             <div>
-              <h2 id="captaincy-title">Captaincy Optimizer</h2>
-              <p>Build your XI from the player pool, then rank captaincy upside.</p>
+              <h2 id="captaincy-title">Squad Builder + Captaincy Optimizer</h2>
+              <p>Build a legal fantasy squad, set your starters, then rank captaincy upside.</p>
             </div>
             <div class="panel-actions">
               <button class="ghost-button" type="button" id="load-xi-sample">Load sample</button>
-              <button class="ghost-button" type="button" id="clear-xi">Clear XI</button>
+              <button class="ghost-button" type="button" id="clear-xi">Clear squad</button>
             </div>
           </div>
 
           <form id="captaincy-form">
+            <div class="squad-rules" id="squad-rule-summary"></div>
             <div class="builder-layout">
               <section class="player-picker compact" aria-label="Captaincy player pool">
                 <div class="picker-controls">
@@ -151,15 +152,22 @@
                 <div class="player-results" id="squad-player-results"></div>
               </section>
 
-              <section class="selected-xi" aria-label="Selected starting XI">
+              <section class="selected-xi" aria-label="Selected fantasy squad">
                 <div class="xi-summary">
                   <div>
-                    <h3>Selected XI</h3>
-                    <p id="xi-count">0 / 11 players</p>
+                    <h3>Your Squad</h3>
+                    <p id="xi-count">0 / 15 players</p>
                   </div>
                   <div class="budget-pill" id="xi-budget">$0.0m</div>
                 </div>
                 <div class="position-counts" id="position-counts"></div>
+                <div class="lineup-status">
+                  <span class="mini-pill" id="lineup-count">0 / 11 starters</span>
+                  <span class="mini-pill" id="lineup-formation">Formation TBC</span>
+                  <span class="mini-pill" id="captain-chip">Captain TBC</span>
+                  <span class="mini-pill" id="vice-chip">Vice TBC</span>
+                </div>
+                <div class="squad-validation" id="squad-validation"></div>
                 <div class="selected-xi-list" id="selected-xi-list"></div>
               </section>
             </div>

@@ -434,9 +434,25 @@ h3 {
   color: var(--green-dark);
 }
 
+.mini-pill.red,
+.budget-pill.red {
+  background: var(--red-soft);
+  color: var(--red-text);
+}
+
+.budget-pill.green {
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
 .mini-action {
   background: var(--action-bg);
   color: var(--action-text);
+}
+
+.mini-action.muted {
+  background: var(--surface-2);
+  color: var(--muted);
 }
 
 .pool-empty {
@@ -453,6 +469,27 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
   gap: 14px;
+}
+
+.squad-rules {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.rule-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface-3);
+  color: var(--badge-text);
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
 }
 
 .selected-xi {
@@ -480,7 +517,55 @@ h3 {
 
 .selected-xi-list {
   display: grid;
+  gap: 14px;
+}
+
+.lineup-status {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.squad-validation {
+  border: 1px solid var(--gold);
+  border-radius: 8px;
+  background: var(--gold-soft);
+  color: var(--gold-text);
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.squad-validation.ready {
+  border-color: rgba(31, 122, 77, 0.36);
+  background: var(--green-soft);
+  color: var(--green-dark);
+}
+
+.squad-group {
+  display: grid;
   gap: 8px;
+}
+
+.squad-group-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+}
+
+.squad-group-head h4 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.squad-group-head span {
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .xi-card {
@@ -492,6 +577,18 @@ h3 {
   border-radius: 8px;
   background: var(--surface);
   padding: 10px;
+}
+
+.xi-card.starter {
+  border-color: rgba(31, 122, 77, 0.34);
+}
+
+.xi-card.bench {
+  background: var(--surface-3);
+}
+
+.xi-card.captain-card {
+  box-shadow: inset 4px 0 0 var(--green);
 }
 
 label {
@@ -552,8 +649,42 @@ textarea:focus {
   background: var(--surface-2);
 }
 
+.ghost-mini,
+.role-button {
+  display: inline-grid;
+  place-items: center;
+  min-height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 9px;
+  font-size: 11px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.role-button {
+  width: 34px;
+  padding: 0;
+}
+
+.role-button.active {
+  border-color: rgba(31, 122, 77, 0.4);
+  background: var(--green);
+  color: #fff;
+}
+
+.ghost-mini:hover,
+.role-button:hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+
 .ghost-button:disabled,
-.primary-button:disabled {
+.primary-button:disabled,
+.ghost-mini:disabled,
+.role-button:disabled {
   cursor: not-allowed;
   opacity: 0.52;
 }
