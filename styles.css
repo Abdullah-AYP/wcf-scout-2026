@@ -360,6 +360,7 @@ h3 {
 .tool-panel {
   display: none;
   padding: 18px;
+  min-width: 0;
 }
 
 .tool-panel.active {
@@ -410,6 +411,7 @@ h3 {
     linear-gradient(135deg, rgba(0, 214, 122, 0.08), transparent 44%),
     var(--surface-3);
   padding: 12px;
+  min-width: 0;
 }
 
 .player-picker.compact {
@@ -615,8 +617,27 @@ h3 {
 
 .builder-layout {
   display: grid;
-  grid-template-columns: minmax(280px, 0.92fr) minmax(360px, 1.08fr);
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
   gap: 14px;
+  align-items: start;
+  min-width: 0;
+}
+
+#captaincy-panel .player-results {
+  max-height: 640px;
+}
+
+#captaincy-panel .player-option {
+  grid-template-columns: 42px minmax(0, 1fr);
+}
+
+#captaincy-panel .player-meta {
+  grid-column: 2;
+  justify-content: flex-start;
+}
+
+#captaincy-panel .player-action {
+  margin-left: auto;
 }
 
 .squad-rules {
@@ -652,6 +673,7 @@ h3 {
     linear-gradient(135deg, rgba(0, 214, 122, 0.08), transparent 48%),
     var(--surface-3);
   padding: 12px;
+  min-width: 0;
 }
 
 .xi-summary {
@@ -985,15 +1007,16 @@ h3 {
 
 .xi-card {
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 42px minmax(0, 1fr);
   gap: 10px;
-  align-items: center;
+  align-items: start;
   border: 1px solid var(--line);
   border-radius: 14px;
   background:
     linear-gradient(135deg, rgba(0, 217, 255, 0.045), transparent 48%),
     var(--surface);
   padding: 10px;
+  min-width: 0;
 }
 
 .xi-card.starter {
@@ -1013,6 +1036,12 @@ h3 {
   display: grid;
   gap: 4px;
   min-width: 0;
+}
+
+.xi-card-meta {
+  grid-column: 1 / -1;
+  justify-content: flex-start;
+  padding-left: 52px;
 }
 
 label {
@@ -1093,7 +1122,8 @@ textarea:focus {
 }
 
 .role-button {
-  width: 34px;
+  min-width: 38px;
+  width: 38px;
   padding: 0;
 }
 
@@ -1144,8 +1174,8 @@ textarea:focus {
 }
 
 .xi-card .remove-player {
-  width: 34px;
-  min-height: 34px;
+  width: 38px;
+  min-height: 38px;
 }
 
 .context-field {
@@ -1414,9 +1444,9 @@ textarea:focus {
   color: var(--brand-text);
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1360px) {
   .workspace {
-    grid-template-columns: 220px minmax(0, 1fr);
+    grid-template-columns: 230px minmax(0, 1fr);
   }
 
   .results-panel {
@@ -1468,6 +1498,10 @@ textarea:focus {
   .xi-card-meta,
   .position-counts {
     justify-content: flex-start;
+  }
+
+  .xi-card-meta {
+    padding-left: 0;
   }
 
   .xi-row {
