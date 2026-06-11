@@ -1,182 +1,70 @@
 # WCF Scout 2026
 
-WCF Scout 2026 is a free-to-run fantasy football scouting web app for FIFA World Cup Fantasy 2026.
+WCF Scout 2026 is a fantasy football scouting app for FIFA World Cup Fantasy 2026.
 
-Live site: https://wcfscout.app
+Use it here: https://wcfscout.app
 
-The app helps users search the World Cup Fantasy player pool, find low-owned differentials, build a legal fantasy squad, and get AI-assisted captaincy recommendations.
+The app helps fantasy managers search the player pool, discover low-owned picks, build a legal squad, and compare captaincy options.
 
-## Features
+## What You Can Do
 
-- Differential Scout for one-player scouting reports.
-- Squad Builder with FIFA fantasy squad rules.
-- Captaincy Optimizer for ranking captain and vice-captain options.
-- Neon pitchside UI with player-shirt cards and a tactical pitch view.
-- Official FIFA fantasy player feed integration.
-- 48-country filters for easier player discovery.
-- Full country player pools sorted by selected percentage from lowest owned to highest owned.
-- Accent-insensitive search, so users can type plain letters and still find accented FIFA names.
-- Football-name aliases for common names that FIFA stores as full legal names, for example `vitinha` finds `Vitor Machado Ferreira`.
-- Light and dark mode.
+- Search players by name, position, or country.
+- Browse all 48 World Cup countries.
+- View country player pools sorted from lowest selected percentage to highest selected percentage.
+- Find hidden differentials and under-5% punts.
+- Build a 15-player fantasy squad with budget, country-limit, and position checks.
+- Set starters, captain, and vice-captain on a pitch-style layout.
+- Run an AI-assisted scout report for differentials and captaincy choices.
+- Switch between light and dark mode.
 
-## How It Works
+## Differential Scout
 
-The frontend is plain HTML, CSS, and JavaScript. The backend is a small Node server locally and Vercel serverless functions in production.
+Use the Differential Scout when you want to check one player.
 
-The browser calls:
+Search for a player, spotlight them, and run the report. The app looks at their position, price, selected percentage, country, fixture, and context to help judge whether they are worth considering.
 
-```text
-/api/players
-/api/analyze
-```
+## Squad Builder
 
-`/api/players` loads and normalizes FIFA fantasy data. `/api/analyze` sends the selected player or squad context to GitHub Models and returns a structured scouting report.
+Use the Squad Builder to create your fantasy team.
 
-## Player Data
+The app helps track:
 
-By default, the app reads FIFA fantasy data from:
-
-```text
-https://play.fifa.com/json/fantasy/
-```
-
-The feed is expected to expose:
-
-```text
-players.json
-squads.json
-rounds.json
-```
-
-The data adapter normalizes:
-
-- player names
-- aliases
-- positions
-- countries
-- prices
-- selected percentage
-- player status
-- next fixtures
-- squad rules
-- budget rules
+- squad size
+- budget
+- position limits
 - country limits
+- starters
+- bench players
+- captain
+- vice-captain
 
-If the live FIFA feed fails or changes shape, the app falls back to `data/sample-players.json` so the UI does not completely break.
+The pitch view makes it easier to see your starting XI and captaincy setup.
 
-## AI Provider
+## Player Search
 
-This project uses GitHub Models, so you can use a GitHub Personal Access Token instead of paying for a separate API key.
+Some FIFA player names are stored as full legal names, so the app includes football-name aliases for easier searching.
 
-The token must stay server-side. Never paste it into `index.html`, `app.js`, or any browser-side code.
-
-Required environment variable:
-
-```text
-GITHUB_MODELS_TOKEN=github_pat_your_token_here
-```
-
-Optional model override:
+Examples:
 
 ```text
-GITHUB_MODELS_MODEL=openai/gpt-4.1
+vitinha
+bruno fernandes
+joao cancelo
+nuno mendes
 ```
 
-The app includes fallback handling if the configured model is unavailable.
+The search also handles accented names, so users can type plain letters and still find players with accents in the official feed.
 
-## Local Setup
+## Data
 
-Clone the repo, then create your local environment file:
+Player names, countries, positions, prices, selected percentages, fixtures, and fantasy rules are loaded from FIFA's public World Cup Fantasy data feed.
 
-```bash
-cp .env.example .env
-```
+If FIFA changes the feed, some player data may update or behave differently.
 
-Edit `.env`:
-
-```text
-GITHUB_MODELS_TOKEN=github_pat_your_token_here
-GITHUB_MODELS_MODEL=openai/gpt-4.1
-```
-
-Run the app:
-
-```bash
-npm run dev
-```
-
-Open:
-
-```text
-http://127.0.0.1:3000
-```
-
-Run syntax checks:
-
-```bash
-npm run check
-```
-
-## Optional Data Settings
-
-Override the FIFA fantasy feed:
-
-```text
-WCF_DATA_BASE_URL=https://your-data-base-url/
-```
-
-Force local sample data:
-
-```text
-WCF_USE_SAMPLE_DATA=true
-```
-
-Allow stale public data during testing:
-
-```text
-WCF_ALLOW_STALE_DATA=true
-```
-
-## Deploying On Vercel
-
-1. Push the repo to GitHub.
-2. Import the repo into Vercel.
-3. Add the environment variables in Vercel:
-
-```text
-GITHUB_MODELS_TOKEN=your GitHub PAT
-GITHUB_MODELS_MODEL=openai/gpt-4.1
-```
-
-4. Deploy.
-5. Add your custom domain in Vercel.
-6. Point your domain DNS to Vercel.
-
-The frontend calls the app's own `/api/analyze` endpoint. The API function calls GitHub Models, so visitors never see your GitHub token.
-
-## Project Structure
-
-```text
-.
-|-- index.html
-|-- styles.css
-|-- app.js
-|-- server.js
-|-- api/
-|   |-- analyze.js
-|   `-- players.js
-|-- lib/
-|   |-- github-models.js
-|   `-- player-data.js
-|-- data/
-|   `-- sample-players.json
-|-- .env.example
-|-- package.json
-`-- README.md
-```
-
-## Notes
-
-GitHub Models free usage is rate-limited and can change over time. For heavier public traffic, add stronger rate limiting, caching, and possibly a paid model provider.
+## Credits
 
 Made by Abdullah Yousuf for the love of the game.
+
+- Website: https://wcfscout.app
+- LinkedIn: https://www.linkedin.com/in/abdullah-yousuf-140925311/
+- GitHub: https://github.com/Abdullah-AYP
