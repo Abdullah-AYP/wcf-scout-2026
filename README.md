@@ -18,7 +18,6 @@ The app helps users search the World Cup Fantasy player pool, find low-owned dif
 - Accent-insensitive search, so users can type plain letters and still find accented FIFA names.
 - Football-name aliases for common names that FIFA stores as full legal names, for example `vitinha` finds `Vitor Machado Ferreira`.
 - Light and dark mode.
-- Footer links for Abdullah Yousuf's LinkedIn and GitHub.
 
 ## How It Works
 
