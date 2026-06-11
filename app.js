@@ -3,6 +3,7 @@
     activeTab: "differential",
     currentReportText: "",
     players: [],
+    selectedDifferential: null,
     selectedXi: [],
     starterIds: [],
     captainId: "",
@@ -55,6 +56,8 @@
   const positionCounts = document.getElementById("position-counts");
   const squadRuleSummary = document.getElementById("squad-rule-summary");
   const squadValidation = document.getElementById("squad-validation");
+  const differentialSpotlight = document.getElementById("differential-spotlight");
+  const lineupPitch = document.getElementById("lineup-pitch");
   const lineupCount = document.getElementById("lineup-count");
   const lineupFormation = document.getElementById("lineup-formation");
   const captainChip = document.getElementById("captain-chip");
@@ -105,6 +108,7 @@
     squadPosition.addEventListener("change", () => renderPlayerResults("squad"));
     squadResults.addEventListener("click", handlePlayerResultClick);
     selectedXiList.addEventListener("click", handleXiClick);
+    if (lineupPitch) lineupPitch.addEventListener("click", handleXiClick);
 
     document.getElementById("load-differential-sample").addEventListener("click", () => {
       fillDifferentialForm(sampleDifferential);
@@ -128,6 +132,13 @@
     differentialForm.addEventListener("submit", (event) => {
       event.preventDefault();
       analyze("differential", formToObject(differentialForm));
+    });
+
+    differentialForm.addEventListener("reset", () => {
+      window.setTimeout(() => {
+        state.selectedDifferential = null;
+        renderDifferentialSpotlight();
+      }, 0);
     });
 
     captaincyForm.addEventListener("submit", (event) => {
@@ -175,6 +186,7 @@
     });
 
     renderSelectedXi();
+    renderDifferentialSpotlight();
     loadPlayers();
   }
 
@@ -283,7 +295,7 @@
   function renderPlayerResults(target) {
     const config = target === "squad"
       ? { search: squadSearch, position: squadPosition, container: squadResults, action: "Add" }
-      : { search: diffSearch, position: diffPosition, container: diffResults, action: "Select" };
+      : { search: diffSearch, position: diffPosition, container: diffResults, action: "Spotlight" };
 
     const query = config.search.value.trim().toLowerCase();
     const position = config.position.value;
@@ -323,6 +335,9 @@
 
     return `
       <article class="player-option ${disabled ? "is-disabled" : ""}" data-player-id="${escapeHtml(player.id)}" data-target="${target}">
+        <span class="player-shirt ${shirtClass(player)}" ${shirtStyle(player)} aria-hidden="true">
+          <span>${escapeHtml(teamInitials(player))}</span>
+        </span>
         <span class="player-main">
           <strong>${escapeHtml(player.name)}</strong>
           <span>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</span>
@@ -505,6 +520,7 @@
 
     renderSquadValidation(validation.issues, validation.canAnalyze);
     updateCaptaincySubmit(validation);
+    renderLineupPitch(starters, formation);
 
     if (!state.selectedXi.length) {
       selectedXiList.innerHTML = `<div class="pool-empty">Search the pool and add players to your squad.</div>`;
@@ -527,6 +543,99 @@
         ${bench.length ? bench.map((player) => renderSquadCard(player, false)).join("") : '<div class="pool-empty">Bench slots are empty.</div>'}
       </div>
     `;
+  }
+
+  function renderDifferentialSpotlight(player = state.selectedDifferential) {
+    if (!differentialSpotlight) return;
+
+    if (!player) {
+      differentialSpotlight.innerHTML = `
+        <div class="spotlight-pitch" aria-hidden="true">
+          <span class="spotlight-circle"></span>
+          <span class="spotlight-box"></span>
+        </div>
+        <div class="spotlight-copy">
+          <span class="spotlight-kicker">Touchline view</span>
+          <h3>Pick a player to light up the pitch.</h3>
+          <p>The selected differential appears here with shirt, country, price, ownership, and fixture context.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const ownership = ownershipText(player.ownership);
+    const isDifferential = Number(player.ownership) < 5;
+    differentialSpotlight.innerHTML = `
+      <div class="spotlight-pitch" aria-hidden="true">
+        <span class="spotlight-circle"></span>
+        <span class="spotlight-box"></span>
+        <div class="spotlight-player">
+          <span class="hero-shirt ${shirtClass(player)}" ${shirtStyle(player)}>
+            <span>${escapeHtml(teamInitials(player))}</span>
+          </span>
+          <span class="spotlight-shadow"></span>
+        </div>
+      </div>
+      <div class="spotlight-copy">
+        <span class="spotlight-kicker">${isDifferential ? "Under-5% differential" : "Scout watchlist"}</span>
+        <h3>${escapeHtml(player.name)}</h3>
+        <p>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</p>
+        <div class="spotlight-stats">
+          <span>${escapeHtml(player.position)}</span>
+          <span>${escapeHtml(player.price || "Price TBC")}</span>
+          <span>${escapeHtml(ownership)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLineupPitch(starters = lineupPlayers(), formation = currentFormation(starters)) {
+    if (!lineupPitch) return;
+
+    if (!starters.length) {
+      lineupPitch.innerHTML = `<div class="pitch-empty">Add starters to build your XI on the pitch.</div>`;
+      return;
+    }
+
+    const groups = positionMapToPlayers(starters);
+    const rows = ["FWD", "MID", "DEF", "GK"];
+    lineupPitch.innerHTML = `
+      <div class="pitch-glow" aria-hidden="true"></div>
+      <div class="pitch-formation-label">${escapeHtml(formation || "Formation building")}</div>
+      ${rows.map((position) => renderPitchRow(position, groups[position])).join("")}
+    `;
+  }
+
+  function renderPitchRow(position, players) {
+    const slots = players.length ? players : [];
+    return `
+      <div class="pitch-row pitch-row-${position.toLowerCase()}" data-position="${escapeHtml(position)}">
+        ${slots.length ? slots.map((player) => renderPitchPlayer(player)).join("") : `<span class="pitch-slot-empty">${escapeHtml(position)}</span>`}
+      </div>
+    `;
+  }
+
+  function renderPitchPlayer(player) {
+    const isCaptain = player.id === state.captainId;
+    const isVice = player.id === state.viceId;
+    const role = isCaptain ? "C" : isVice ? "VC" : "";
+    return `
+      <button class="pitch-player ${isCaptain ? "is-captain" : ""} ${isVice ? "is-vice" : ""}" type="button" data-captain-player="${escapeHtml(player.id)}" title="Set ${escapeHtml(player.shortName || player.name)} as captain">
+        ${role ? `<span class="pitch-role">${role}</span>` : ""}
+        <span class="player-shirt pitch-shirt ${shirtClass(player)}" ${shirtStyle(player)} aria-hidden="true">
+          <span>${escapeHtml(teamInitials(player))}</span>
+        </span>
+        <strong>${escapeHtml(player.shortName || shortPlayerName(player.name))}</strong>
+        <span>${escapeHtml(player.position)} - ${escapeHtml(player.price || "TBC")}</span>
+      </button>
+    `;
+  }
+
+  function positionMapToPlayers(players) {
+    return POSITION_ORDER.reduce((groups, position) => {
+      groups[position] = players.filter((player) => player.position === position);
+      return groups;
+    }, {});
   }
 
   function loadSampleXi() {
@@ -556,7 +665,10 @@
 
     return `
       <article class="xi-card ${isStarter ? "starter" : "bench"} ${isCaptain ? "captain-card" : ""}">
-        <div>
+        <span class="player-shirt ${shirtClass(player)}" ${shirtStyle(player)} aria-hidden="true">
+          <span>${escapeHtml(teamInitials(player))}</span>
+        </span>
+        <div class="xi-card-copy">
           <strong>${escapeHtml(player.name)}</strong>
           <span>${escapeHtml(player.team || "Team TBC")} - ${escapeHtml(player.fixture || "Fixture TBC")}</span>
         </div>
@@ -819,6 +931,7 @@
   }
 
   function fillDifferentialForm(player) {
+    state.selectedDifferential = player;
     const values = {
       name: player.name || "",
       position: player.position || "MID",
@@ -834,6 +947,7 @@
       const field = differentialForm.elements[key];
       if (field) field.value = value;
     });
+    renderDifferentialSpotlight(player);
   }
 
   function getPlayerById(id) {
@@ -857,6 +971,40 @@
   function ownershipText(value) {
     const number = Number(value);
     return Number.isFinite(number) ? `${number.toFixed(number % 1 ? 1 : 0)}%` : "Own TBC";
+  }
+
+  function teamInitials(player) {
+    const source = player.teamAbbr || player.team || player.name || "WCF";
+    const letters = String(source)
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .replace(/[^a-z0-9]/gi, "")
+      .slice(0, 3)
+      .toUpperCase();
+    return letters || "WCF";
+  }
+
+  function shortPlayerName(name) {
+    const parts = String(name || "Player").trim().split(/\s+/);
+    return parts.length > 1 ? parts[parts.length - 1] : parts[0];
+  }
+
+  function shirtClass(player) {
+    return `kit-${String(player.position || "mid").toLowerCase()}`;
+  }
+
+  function shirtStyle(player) {
+    const seed = `${player.teamAbbr || ""}${player.team || ""}${player.position || ""}`;
+    const hue = hashString(seed) % 360;
+    const secondHue = (hue + 42 + (hashString(`${seed}-alt`) % 54)) % 360;
+    return `style="--kit-a: hsl(${hue} 86% 46%); --kit-b: hsl(${secondHue} 86% 54%);"`;
+  }
+
+  function hashString(value) {
+    return String(value || "wcf").split("").reduce((hash, char) => {
+      return ((hash << 5) - hash + char.charCodeAt(0)) >>> 0;
+    }, 0);
   }
 
   function stageLabel(stage) {

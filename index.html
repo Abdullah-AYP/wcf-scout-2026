@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>WCF Scout 2026</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=neon-pitch">
   </head>
   <body>
     <main class="app-shell">
@@ -12,11 +12,13 @@
         <div class="brand-block">
           <span class="brand-mark" aria-hidden="true">WCF</span>
           <div>
+            <span class="brand-eyebrow">World Cup Fantasy command center</span>
             <h1>WCF Scout 2026</h1>
-            <p>Fantasy differential and captaincy desk</p>
+            <p>Neon pitchside scouting for differentials, squads, and armband calls.</p>
           </div>
         </div>
         <div class="top-actions">
+          <span class="live-pill">FIFA fantasy data</span>
           <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
             <span class="theme-toggle-label">Dark</span>
           </button>
@@ -70,6 +72,18 @@
             <div class="data-source-line" id="data-source-line">Loading player pool...</div>
             <div class="player-results" id="differential-player-results"></div>
           </div>
+
+          <section class="differential-spotlight" id="differential-spotlight" aria-label="Selected differential player">
+            <div class="spotlight-pitch" aria-hidden="true">
+              <span class="spotlight-circle"></span>
+              <span class="spotlight-box"></span>
+            </div>
+            <div class="spotlight-copy">
+              <span class="spotlight-kicker">Touchline view</span>
+              <h3>Pick a player to light up the pitch.</h3>
+              <p>The selected differential appears here with shirt, country, price, ownership, and fixture context.</p>
+            </div>
+          </section>
 
           <form class="input-grid" id="differential-form">
             <label>
@@ -167,6 +181,9 @@
                   <span class="mini-pill" id="vice-chip">Vice TBC</span>
                 </div>
                 <div class="squad-validation" id="squad-validation"></div>
+                <div class="formation-pitch" id="lineup-pitch" aria-label="Starting XI pitch">
+                  <div class="pitch-empty">Add starters to build your XI on the pitch.</div>
+                </div>
                 <div class="selected-xi-list" id="selected-xi-list"></div>
               </section>
             </div>
@@ -216,6 +233,6 @@
       </footer>
     </main>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=neon-pitch"></script>
   </body>
 </html>
