@@ -1,0 +1,14 @@
+{
+  "name": "wcf-scout-2026",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered differential finder and captaincy optimizer for FIFA World Cup Fantasy 2026.",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "node server.js",
+    "check": "node --check app.js && node --check server.js && node --check api/analyze.js && node --check api/players.js && node --check lib/github-models.js && node --check lib/player-data.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
