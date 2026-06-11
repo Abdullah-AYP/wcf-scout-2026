@@ -322,7 +322,7 @@
     const actionText = selected && target === "squad" ? "Added" : addState.label || action;
 
     return `
-      <button class="player-option" type="button" data-player-id="${escapeHtml(player.id)}" data-target="${target}" ${disabled ? "disabled" : ""}>
+      <article class="player-option ${disabled ? "is-disabled" : ""}" data-player-id="${escapeHtml(player.id)}" data-target="${target}">
         <span class="player-main">
           <strong>${escapeHtml(player.name)}</strong>
           <span>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</span>
@@ -332,9 +332,9 @@
           <span class="mini-pill">${escapeHtml(player.price || "Price TBC")}</span>
           <span class="mini-pill ${Number(player.ownership) < 5 ? "green" : ""}">${escapeHtml(ownershipText(player.ownership))}</span>
           ${target === "squad" && player.status && player.status !== "playing" ? `<span class="mini-pill red">${escapeHtml(player.status)}</span>` : ""}
-          <span class="mini-action ${!addState.ok && target === "squad" ? "muted" : ""}">${escapeHtml(actionText)}</span>
+          <button class="mini-action player-action ${!addState.ok && target === "squad" ? "muted" : ""}" type="button" data-player-action ${disabled ? "disabled" : ""}>${escapeHtml(actionText)}</button>
         </span>
-      </button>
+      </article>
     `;
   }
 
@@ -343,13 +343,16 @@
   }
 
   function handlePlayerResultClick(event) {
-    const button = event.target.closest(".player-option");
-    if (!button) return;
+    const action = event.target.closest("[data-player-action]");
+    if (!action) return;
 
-    const player = getPlayerById(button.dataset.playerId);
+    const option = action.closest(".player-option");
+    if (!option) return;
+
+    const player = getPlayerById(option.dataset.playerId);
     if (!player) return;
 
-    if (button.dataset.target === "squad") {
+    if (option.dataset.target === "squad") {
       addPlayerToSquad(player);
       renderPlayerResults("squad");
       return;
@@ -1013,7 +1016,7 @@
         throw new Error(data.error || "The model request failed.");
       }
 
-      if (data.model) modelChip.textContent = data.model;
+      if (data.model) modelChip.textContent = `Powered by ${friendlyModelName(data.model)}`;
       setStatus("Report generated.");
       showReport(data.report, tool);
     } catch (error) {
@@ -1079,6 +1082,16 @@
     if (text.includes("high")) return "green";
     if (text.includes("low")) return "red";
     return "gold";
+  }
+
+  function friendlyModelName(model) {
+    const cleaned = String(model || "GitHub Models").replace(/^openai\//i, "");
+    if (/^gpt-/i.test(cleaned)) {
+      return cleaned
+        .replace(/^gpt/i, "GPT")
+        .replace(/-mini$/i, " mini");
+    }
+    return cleaned;
   }
 
   function escapeHtml(value) {

@@ -20,7 +20,6 @@
           <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
             <span class="theme-toggle-label">Dark</span>
           </button>
-          <div class="model-chip" id="model-chip">GitHub Models</div>
         </div>
       </header>
 
@@ -184,9 +183,12 @@
 
         <section class="results-panel" aria-live="polite">
           <div class="results-head">
-            <div>
+            <div class="report-title-block">
               <h2>Scout Report</h2>
-              <p id="status-line">Ready for your first query.</p>
+              <div class="report-status-row">
+                <p id="status-line">Ready for your first query.</p>
+                <span class="model-chip" id="model-chip">Powered by GitHub Models</span>
+              </div>
             </div>
             <button class="ghost-button" type="button" id="copy-report" disabled>Copy</button>
           </div>
