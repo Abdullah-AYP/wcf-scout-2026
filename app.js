@@ -326,18 +326,18 @@
           const addB = playerAddState(b).ok ? 0 : 1;
           if (addA !== addB) return addA - addB;
         }
-        const ownA = Number(a.ownership) || 100;
-        const ownB = Number(b.ownership) || 100;
+        const ownA = ownershipSortValue(a.ownership);
+        const ownB = ownershipSortValue(b.ownership);
         return ownA - ownB || String(a.name).localeCompare(String(b.name));
-      })
-      .slice(0, 12);
+      });
+    const visiblePlayers = country ? players : players.slice(0, 12);
 
-    if (!players.length) {
+    if (!visiblePlayers.length) {
       renderEmptyResults(config.container, state.players.length ? "No matching players." : "Loading players...");
       return;
     }
 
-    config.container.innerHTML = players.map((player) => renderPlayerOption(player, target, config.action)).join("");
+    config.container.innerHTML = visiblePlayers.map((player) => renderPlayerOption(player, target, config.action)).join("");
   }
 
   function populateCountryFilters(sourceTeams = []) {
@@ -1002,6 +1002,11 @@
   function ownershipText(value) {
     const number = Number(value);
     return Number.isFinite(number) ? `${number.toFixed(number % 1 ? 1 : 0)}%` : "Own TBC";
+  }
+
+  function ownershipSortValue(value) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : 100;
   }
 
   function teamInitials(player) {
