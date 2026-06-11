@@ -21,6 +21,7 @@
   --blue: #234c6f;
   --action-bg: #16211c;
   --action-text: #ffffff;
+  --github-border: rgba(22, 33, 28, 0.28);
   --brand-text: #f7f5ec;
   --badge-text: #26362f;
   --green-soft: #ddf1e6;
@@ -56,6 +57,7 @@
   --blue: #9dc9f2;
   --action-bg: #e8f1eb;
   --action-text: #07130f;
+  --github-border: rgba(242, 246, 239, 0.28);
   --brand-text: #07130f;
   --badge-text: #e8f1eb;
   --green-soft: #143a27;
@@ -777,6 +779,7 @@ textarea:focus {
 .site-footer p {
   font-size: 14px;
   font-weight: 800;
+  line-height: 1.5;
 }
 
 .footer-links {
@@ -788,20 +791,55 @@ textarea:focus {
 .social-button {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   min-height: 40px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--surface);
   color: var(--ink);
-  padding: 8px 13px;
+  padding: 7px 14px 7px 8px;
   font-size: 13px;
   font-weight: 900;
   text-decoration: none;
+  box-shadow: 0 10px 22px rgba(25, 40, 32, 0.08);
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
 
 .social-button:hover {
   border-color: var(--line-strong);
   background: var(--surface-2);
+  transform: translateY(-1px);
+}
+
+.social-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.social-button.linkedin {
+  border-color: rgba(10, 102, 194, 0.35);
+}
+
+.social-button.linkedin .social-icon {
+  background: #0a66c2;
+  font-size: 13px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.social-button.github {
+  border-color: var(--github-border);
+}
+
+.social-button.github .social-icon {
+  background: var(--ink);
+  color: var(--brand-text);
 }
 
 @media (max-width: 1180px) {
