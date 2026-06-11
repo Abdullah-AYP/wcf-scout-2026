@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,7 +16,12 @@
             <p>Fantasy differential and captaincy desk</p>
           </div>
         </div>
-        <div class="model-chip" id="model-chip">GitHub Models</div>
+        <div class="top-actions">
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
+            <span class="theme-toggle-label">Dark</span>
+          </button>
+          <div class="model-chip" id="model-chip">GitHub Models</div>
+        </div>
       </header>
 
       <section class="workspace">
@@ -106,7 +111,7 @@
               <textarea name="context" rows="3" placeholder="Rotation risk, role, injuries, game state, eye-test notes..."></textarea>
             </label>
             <div class="form-actions wide">
-              <button class="primary-button" type="submit">Analyze player</button>
+              <button class="primary-button" type="submit" data-busy-lock>Analyze player</button>
               <button class="ghost-button" type="reset">Clear</button>
             </div>
           </form>
@@ -163,7 +168,7 @@
               <textarea name="context" rows="3" placeholder="MD2, late kickoff advantage, elimination stakes, rotation concerns..."></textarea>
             </label>
             <div class="form-actions">
-              <button class="primary-button" type="submit">Optimize captaincy</button>
+              <button class="primary-button" type="submit" data-busy-lock>Optimize captaincy</button>
               <button class="ghost-button" type="reset">Clear</button>
             </div>
           </form>
@@ -186,6 +191,13 @@
           </div>
         </section>
       </section>
+      <footer class="site-footer">
+        <p>Made by Abdullah for the love of sports</p>
+        <div class="footer-links">
+          <a class="social-button" href="https://www.linkedin.com/in/abdullah-ayp/" target="_blank" rel="noreferrer">LinkedIn</a>
+          <a class="social-button" href="https://github.com/Abdullah-AYP" target="_blank" rel="noreferrer">GitHub</a>
+        </div>
+      </footer>
     </main>
 
     <script src="app.js"></script>

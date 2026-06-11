@@ -4,7 +4,9 @@
     currentReportText: "",
     players: [],
     selectedXi: [],
-    dataSource: "loading"
+    dataSource: "loading",
+    isBusy: false,
+    theme: "light"
   };
 
   const tabs = document.querySelectorAll(".tab-button");
@@ -18,6 +20,7 @@
   const resultOutput = document.getElementById("result-output");
   const copyButton = document.getElementById("copy-report");
   const modelChip = document.getElementById("model-chip");
+  const themeButton = document.getElementById("theme-toggle");
   const dataSourceLine = document.getElementById("data-source-line");
   const diffSearch = document.getElementById("differential-player-search");
   const diffPosition = document.getElementById("differential-position-filter");
@@ -58,7 +61,13 @@
   init();
 
   function init() {
+    initTheme();
+
     tabs.forEach((tab) => tab.addEventListener("click", () => setActiveTab(tab.dataset.tab)));
+
+    if (themeButton) {
+      themeButton.addEventListener("click", toggleTheme);
+    }
 
     diffSearch.addEventListener("input", () => renderPlayerResults("differential"));
     diffPosition.addEventListener("change", () => renderPlayerResults("differential"));
@@ -110,12 +119,56 @@
 
     copyButton.addEventListener("click", async () => {
       if (!state.currentReportText) return;
-      await navigator.clipboard.writeText(state.currentReportText);
-      setStatus("Report copied.");
+      try {
+        await navigator.clipboard.writeText(state.currentReportText);
+        setStatus("Report copied.");
+      } catch (error) {
+        showError("Could not copy the report. Your browser blocked clipboard access.");
+      }
     });
 
     renderSelectedXi();
     loadPlayers();
+  }
+
+  function initTheme() {
+    const savedTheme = safeLocalStorageGet("wcf-theme");
+    const systemTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+    applyTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : systemTheme, false);
+  }
+
+  function toggleTheme() {
+    applyTheme(state.theme === "dark" ? "light" : "dark", true);
+  }
+
+  function applyTheme(theme, persist) {
+    state.theme = theme;
+    document.documentElement.dataset.theme = theme;
+
+    if (themeButton) {
+      themeButton.setAttribute("aria-pressed", String(theme === "dark"));
+      themeButton.title = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
+      const label = themeButton.querySelector(".theme-toggle-label");
+      if (label) label.textContent = theme === "dark" ? "Light" : "Dark";
+    }
+
+    if (persist) {
+      try {
+        window.localStorage.setItem("wcf-theme", theme);
+      } catch (error) {
+        // Theme still changes for the current page even when storage is blocked.
+      }
+    }
+  }
+
+  function safeLocalStorageGet(key) {
+    try {
+      return window.localStorage.getItem(key);
+    } catch (error) {
+      return null;
+    }
   }
 
   async function loadPlayers() {
@@ -153,8 +206,9 @@
   }
 
   function setBusy(isBusy) {
-    document.querySelectorAll("button").forEach((button) => {
-      if (button.id !== "copy-report") button.disabled = isBusy;
+    state.isBusy = isBusy;
+    document.querySelectorAll("[data-busy-lock]").forEach((button) => {
+      button.disabled = isBusy;
     });
     copyButton.disabled = isBusy || !state.currentReportText;
   }
@@ -445,6 +499,8 @@
   }
 
   async function analyze(tool, payload) {
+    if (state.isBusy) return;
+
     setBusy(true);
     setStatus("Asking GitHub Models...");
     showLoading(tool === "captaincy" ? "Optimizing captaincy" : "Analyzing differential");
@@ -455,7 +511,14 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tool, payload })
       });
-      const data = await response.json();
+      const text = await response.text();
+      let data;
+
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        data = { error: text || "The server returned an unreadable response." };
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "The model request failed.");
