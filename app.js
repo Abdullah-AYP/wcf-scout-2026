@@ -219,22 +219,12 @@
   }
 
   async function loadPlayers() {
+    let data;
+
     try {
       const response = await fetch("/api/players");
-      const data = await response.json();
+      data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load player data.");
-
-      state.players = Array.isArray(data.players) ? data.players : [];
-      state.dataSource = data.source || "unknown";
-      state.rules = normalizeRules(data.rules);
-      dataSourceLine.textContent = data.warning
-        ? `${data.sourceLabel || "Player data"} - ${data.warning}`
-        : `${data.sourceLabel || "Player data"} - ${state.players.length} players loaded`;
-      dataSourceLine.classList.toggle("warning", Boolean(data.warning || data.source === "sample"));
-      hydrateSquad();
-      renderSelectedXi();
-      renderPlayerResults("differential");
-      renderPlayerResults("squad");
     } catch (error) {
       state.rules = normalizeRules();
       dataSourceLine.textContent = error.message || "Could not load player data.";
@@ -242,6 +232,26 @@
       renderEmptyResults(diffResults, "Player pool unavailable.");
       renderEmptyResults(squadResults, "Player pool unavailable.");
       renderSelectedXi();
+      return;
+    }
+
+    state.players = Array.isArray(data.players) ? data.players : [];
+    state.dataSource = data.source || "unknown";
+    state.rules = normalizeRules(data.rules);
+    dataSourceLine.textContent = data.warning
+      ? `${data.sourceLabel || "Player data"} - ${data.warning}`
+      : `${data.sourceLabel || "Player data"} - ${state.players.length} players loaded`;
+    dataSourceLine.classList.toggle("warning", Boolean(data.warning || data.source === "sample"));
+
+    try {
+      hydrateSquad();
+      renderSelectedXi();
+      renderPlayerResults("differential");
+      renderPlayerResults("squad");
+    } catch (error) {
+      console.error(error);
+      renderPlayerResults("differential");
+      renderPlayerResults("squad");
     }
   }
 
@@ -472,15 +482,23 @@
       return `<span class="mini-pill ${tone}">${position} ${count}/${target}</span>`;
     }).join("");
 
-    lineupCount.textContent = `${starters.length} / ${rules.lineupSize} starters`;
-    lineupCount.classList.toggle("green", starters.length === rules.lineupSize);
-    lineupCount.classList.toggle("red", starters.length > rules.lineupSize);
-    lineupFormation.textContent = formation ? `${formation} formation` : "Formation TBC";
-    lineupFormation.classList.toggle("green", Boolean(formation));
-    captainChip.textContent = captain ? `C ${captain.shortName || captain.name}` : "Captain TBC";
-    captainChip.classList.toggle("green", Boolean(captain));
-    viceChip.textContent = vice ? `VC ${vice.shortName || vice.name}` : "Vice TBC";
-    viceChip.classList.toggle("green", Boolean(vice));
+    if (lineupCount) {
+      lineupCount.textContent = `${starters.length} / ${rules.lineupSize} starters`;
+      lineupCount.classList.toggle("green", starters.length === rules.lineupSize);
+      lineupCount.classList.toggle("red", starters.length > rules.lineupSize);
+    }
+    if (lineupFormation) {
+      lineupFormation.textContent = formation ? `${formation} formation` : "Formation TBC";
+      lineupFormation.classList.toggle("green", Boolean(formation));
+    }
+    if (captainChip) {
+      captainChip.textContent = captain ? `C ${captain.shortName || captain.name}` : "Captain TBC";
+      captainChip.classList.toggle("green", Boolean(captain));
+    }
+    if (viceChip) {
+      viceChip.textContent = vice ? `VC ${vice.shortName || vice.name}` : "Vice TBC";
+      viceChip.classList.toggle("green", Boolean(vice));
+    }
 
     renderSquadValidation(validation.issues, validation.canAnalyze);
     updateCaptaincySubmit(validation);
@@ -554,6 +572,7 @@
   }
 
   function renderRuleSummary() {
+    if (!squadRuleSummary) return;
     const rules = getRules();
     squadRuleSummary.innerHTML = `
       <span class="rule-chip">Budget $${rules.budget.toFixed(1)}m</span>
