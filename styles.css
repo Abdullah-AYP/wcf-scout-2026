@@ -1468,6 +1468,13 @@ textarea:focus {
   line-height: 1.5;
 }
 
+.site-footer .footer-disclaimer {
+  max-width: 640px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .footer-links {
   display: flex;
   gap: 10px;

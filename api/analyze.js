@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const request = prepareAnalyzeRequest(req, req.body || {});
+    const request = await prepareAnalyzeRequest(req, req.body || {});
     const result = await analyzeWcfRequest(request);
     return res.status(200).json(result);
   } catch (error) {

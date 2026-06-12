@@ -285,8 +285,8 @@
     const selectableCount = diagnostics.selectablePlayerCount;
     const source = data.sourceLabel || "Player data";
     const countLabel = Number.isFinite(Number(selectableCount))
-      ? `${rawCount} FIFA fantasy records, ${selectableCount} selectable players`
-      : `${rawCount} FIFA fantasy records`;
+      ? `${rawCount} FIFA Fantasy feed records loaded, ${selectableCount} selectable after status checks`
+      : `${rawCount} FIFA Fantasy feed records loaded`;
     return data.warning ? `${source} - ${countLabel} - ${data.warning}` : `${source} - ${countLabel}`;
   }
 

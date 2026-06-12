@@ -53,7 +53,7 @@ async function handleAnalyze(req, res) {
     }
 
     const body = await readBody(req, MAX_ANALYZE_BODY_BYTES);
-    const request = prepareAnalyzeRequest(req, body);
+    const request = await prepareAnalyzeRequest(req, body);
     const result = await analyzeWcfRequest(request);
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(result));

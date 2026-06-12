@@ -6,8 +6,8 @@
   "type": "commonjs",
   "scripts": {
     "dev": "node server.js",
-    "check": "node --check app.js && node --check server.js && node --check api/analyze.js && node --check api/players.js && node --check lib/analyze-guard.js && node --check lib/github-models.js && node --check lib/player-data.js && node --check tests/analyze-guard.test.js",
-    "test": "node tests/analyze-guard.test.js"
+    "check": "node --check app.js && node --check server.js && node --check api/analyze.js && node --check api/players.js && node --check lib/analyze-guard.js && node --check lib/fantasy-squad-rules.js && node --check lib/github-models.js && node --check lib/player-data.js && node --check tests/analyze-guard.test.js && node --check tests/mobile-smoke.test.js && node --check tests/player-data.test.js && node --check tests/squad-rules.test.js",
+    "test": "node tests/analyze-guard.test.js && node tests/squad-rules.test.js && node tests/player-data.test.js && node tests/mobile-smoke.test.js"
   },
   "engines": {
     "node": ">=18"
