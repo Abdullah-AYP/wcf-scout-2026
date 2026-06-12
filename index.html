@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>WCF Scout 2026</title>
-    <link rel="stylesheet" href="styles.css?v=display-names">
+    <link rel="stylesheet" href="styles.css?v=api-hardening">
   </head>
   <body>
     <main class="app-shell">
@@ -42,6 +42,11 @@
             </dl>
           </div>
         </aside>
+
+        <div class="data-warning-banner" id="data-warning-banner" hidden>
+          <strong>Live FIFA data unavailable</strong>
+          <span>Demo data is loaded, so AI scouting recommendations are disabled until the live feed returns.</span>
+        </div>
 
         <section class="tool-panel active" id="differential-panel" aria-labelledby="differential-title">
           <div class="panel-head">
@@ -245,6 +250,6 @@
       </footer>
     </main>
 
-    <script src="app.js?v=display-names"></script>
+    <script src="app.js?v=api-hardening"></script>
   </body>
 </html>

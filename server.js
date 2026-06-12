@@ -2,6 +2,7 @@ const fs = require("fs");
 const http = require("http");
 const path = require("path");
 const { analyzeWcfRequest, getModel } = require("./lib/github-models");
+const { MAX_ANALYZE_BODY_BYTES, prepareAnalyzeRequest, serializeApiError } = require("./lib/analyze-guard");
 const { getPlayerData } = require("./lib/player-data");
 
 loadDotEnv();
@@ -51,13 +52,18 @@ async function handleAnalyze(req, res) {
       return;
     }
 
-    const body = await readBody(req);
-    const result = await analyzeWcfRequest(JSON.parse(body || "{}"));
+    const body = await readBody(req, MAX_ANALYZE_BODY_BYTES);
+    const request = prepareAnalyzeRequest(req, body);
+    const result = await analyzeWcfRequest(request);
     res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
     res.end(JSON.stringify(result));
   } catch (error) {
-    res.writeHead(error.statusCode || 500, { "Content-Type": "application/json; charset=utf-8" });
-    res.end(JSON.stringify({ error: error.message || "Unexpected server error." }));
+    const response = serializeApiError(error);
+    res.writeHead(response.statusCode, {
+      "Content-Type": "application/json; charset=utf-8",
+      ...response.headers
+    });
+    res.end(JSON.stringify(response.body));
   }
 }
 
@@ -101,13 +107,17 @@ function serveStatic(pathname, res) {
   });
 }
 
-function readBody(req) {
+function readBody(req, maxBytes = 80_000) {
   return new Promise((resolve, reject) => {
     let body = "";
     req.on("data", (chunk) => {
       body += chunk;
-      if (body.length > 80_000) {
-        reject(new Error("Request body is too large."));
+      if (Buffer.byteLength(body) > maxBytes) {
+        const error = new Error("That request is too large. Shorten the notes and try again.");
+        error.statusCode = 413;
+        error.code = "BODY_TOO_LARGE";
+        error.publicMessage = error.message;
+        reject(error);
         req.destroy();
       }
     });

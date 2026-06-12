@@ -11,6 +11,7 @@
     rules: null,
     dataSource: "loading",
     isBusy: false,
+    aiEnabled: true,
     theme: "light"
   };
 
@@ -44,6 +45,7 @@
   const modelChip = document.getElementById("model-chip");
   const themeButton = document.getElementById("theme-toggle");
   const dataSourceLine = document.getElementById("data-source-line");
+  const dataWarningBanner = document.getElementById("data-warning-banner");
   const diffSearch = document.getElementById("differential-player-search");
   const diffPosition = document.getElementById("differential-position-filter");
   const diffCountry = document.getElementById("differential-country-filter");
@@ -235,21 +237,24 @@
       if (!response.ok) throw new Error(data.error || "Could not load player data.");
     } catch (error) {
       state.rules = normalizeRules();
+      state.aiEnabled = false;
       dataSourceLine.textContent = error.message || "Could not load player data.";
       dataSourceLine.classList.add("warning");
+      renderDataWarning({ warning: error.message || "Could not load live FIFA data.", demoData: true });
       renderEmptyResults(diffResults, "Player pool unavailable.");
       renderEmptyResults(squadResults, "Player pool unavailable.");
       renderSelectedXi();
+      setBusy(false);
       return;
     }
 
     state.players = Array.isArray(data.players) ? data.players : [];
     state.dataSource = data.source || "unknown";
     state.rules = normalizeRules(data.rules);
-    dataSourceLine.textContent = data.warning
-      ? `${data.sourceLabel || "Player data"} - ${data.warning}`
-      : `${data.sourceLabel || "Player data"} - ${state.players.length} players loaded`;
-    dataSourceLine.classList.toggle("warning", Boolean(data.warning || data.source === "sample"));
+    state.aiEnabled = Boolean(data.aiEnabled && data.liveDataAvailable && !data.demoData && !data.stale);
+    dataSourceLine.textContent = playerSourceLabel(data);
+    dataSourceLine.classList.toggle("warning", !state.aiEnabled || Boolean(data.warning || data.source === "sample"));
+    renderDataWarning(data);
 
     try {
       hydrateSquad();
@@ -257,10 +262,12 @@
       renderSelectedXi();
       renderPlayerResults("differential");
       renderPlayerResults("squad");
+      setBusy(false);
     } catch (error) {
       console.error(error);
       renderPlayerResults("differential");
       renderPlayerResults("squad");
+      setBusy(false);
     }
   }
 
@@ -272,6 +279,31 @@
     });
   }
 
+  function playerSourceLabel(data) {
+    const diagnostics = data.diagnostics || {};
+    const rawCount = diagnostics.rawRecordCount ?? state.players.length;
+    const selectableCount = diagnostics.selectablePlayerCount;
+    const source = data.sourceLabel || "Player data";
+    const countLabel = Number.isFinite(Number(selectableCount))
+      ? `${rawCount} FIFA fantasy records, ${selectableCount} selectable players`
+      : `${rawCount} FIFA fantasy records`;
+    return data.warning ? `${source} - ${countLabel} - ${data.warning}` : `${source} - ${countLabel}`;
+  }
+
+  function renderDataWarning(data = {}) {
+    if (!dataWarningBanner) return;
+    const shouldBlock = !state.aiEnabled || data.demoData || data.stale || data.source === "sample";
+    dataWarningBanner.hidden = !shouldBlock;
+    if (!shouldBlock) return;
+
+    const label = data.demoData || data.source === "sample" ? "Demo data is loaded" : "Live FIFA data needs review";
+    const detail = data.warning || "Live FIFA data is unavailable or stale.";
+    dataWarningBanner.innerHTML = `
+      <strong>${escapeHtml(label)}</strong>
+      <span>${escapeHtml(detail)} AI scouting recommendations are disabled until live FIFA fantasy data is available.</span>
+    `;
+  }
+
   function setStatus(message) {
     statusLine.textContent = message;
   }
@@ -279,7 +311,7 @@
   function setBusy(isBusy) {
     state.isBusy = isBusy;
     document.querySelectorAll("[data-busy-lock]").forEach((button) => {
-      button.disabled = isBusy;
+      button.disabled = isBusy || !state.aiEnabled;
     });
     updateCaptaincySubmit();
     copyButton.disabled = isBusy || !state.currentReportText;
@@ -1041,7 +1073,7 @@
 
   function updateCaptaincySubmit(validation = validateLineup()) {
     if (!captaincySubmit) return;
-    captaincySubmit.disabled = state.isBusy || !validation.canAnalyze;
+    captaincySubmit.disabled = state.isBusy || !state.aiEnabled || !validation.canAnalyze;
   }
 
   function fillDifferentialForm(player) {
@@ -1343,6 +1375,11 @@
 
   async function analyze(tool, payload) {
     if (state.isBusy) return;
+    if (!state.aiEnabled) {
+      setStatus("AI scouting disabled.");
+      showError("AI scouting recommendations are disabled while live FIFA fantasy data is unavailable.");
+      return;
+    }
 
     setBusy(true);
     setStatus("Asking GitHub Models...");

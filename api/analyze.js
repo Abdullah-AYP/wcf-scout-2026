@@ -1,4 +1,5 @@
 const { analyzeWcfRequest } = require("../lib/github-models");
+const { prepareAnalyzeRequest, serializeApiError } = require("../lib/analyze-guard");
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -7,11 +8,12 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const result = await analyzeWcfRequest(req.body || {});
+    const request = prepareAnalyzeRequest(req, req.body || {});
+    const result = await analyzeWcfRequest(request);
     return res.status(200).json(result);
   } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      error: error.message || "Unexpected server error."
-    });
+    const response = serializeApiError(error);
+    Object.entries(response.headers).forEach(([key, value]) => res.setHeader(key, value));
+    return res.status(response.statusCode).json(response.body);
   }
 };
