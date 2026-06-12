@@ -148,13 +148,12 @@
       }
 
       analyze("captaincy", {
-        players: lineupPlayers().map((player) => ({
-          ...player,
+        players: lineupPlayers().map((player) => playerForReport(player, {
           role: player.id === state.captainId ? "captain" : player.id === state.viceId ? "vice captain" : "starter"
         })),
-        captain: getPlayerById(state.captainId),
-        viceCaptain: getPlayerById(state.viceId),
-        bench: benchPlayers(),
+        captain: playerForReport(getPlayerById(state.captainId)),
+        viceCaptain: playerForReport(getPlayerById(state.viceId)),
+        bench: benchPlayers().map((player) => playerForReport(player)),
         squadSummary: squadSummary(),
         context: captaincyForm.elements.context.value.trim()
       });
@@ -321,7 +320,7 @@
         }
         const ownA = ownershipSortValue(a.ownership);
         const ownB = ownershipSortValue(b.ownership);
-        return ownA - ownB || String(a.name).localeCompare(String(b.name));
+        return ownA - ownB || displayPlayerName(a).localeCompare(displayPlayerName(b));
       });
     const visiblePlayers = country ? players : players.slice(0, 12);
 
@@ -355,6 +354,8 @@
     const addState = target === "squad" ? playerAddState(player) : { ok: true, label: action };
     const disabled = target === "squad" && (selected || !addState.ok);
     const actionText = selected && target === "squad" ? "Added" : addState.label || action;
+    const displayName = displayPlayerName(player);
+    const officialTitle = player.name && player.name !== displayName ? ` title="${escapeHtml(player.name)}"` : "";
 
     return `
       <article class="player-option ${disabled ? "is-disabled" : ""}" data-player-id="${escapeHtml(player.id)}" data-target="${target}">
@@ -362,14 +363,13 @@
           <span>${escapeHtml(teamInitials(player))}</span>
         </span>
         <span class="player-main">
-          <strong>${escapeHtml(player.name)}</strong>
+          <strong${officialTitle}>${escapeHtml(displayName)}</strong>
           <span>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</span>
         </span>
         <span class="player-meta">
           <span class="mini-pill">${escapeHtml(player.position)}</span>
           <span class="mini-pill">${escapeHtml(player.price || "Price TBC")}</span>
           <span class="mini-pill ${Number(player.ownership) < 5 ? "green" : ""}">${escapeHtml(ownershipText(player.ownership))}</span>
-          ${player.aliases?.length ? `<span class="mini-pill gold">aka ${escapeHtml(player.aliases[0])}</span>` : ""}
           ${target === "squad" && player.status && player.status !== "playing" ? `<span class="mini-pill red">${escapeHtml(player.status)}</span>` : ""}
           <button class="mini-action player-action ${!addState.ok && target === "squad" ? "muted" : ""}" type="button" data-player-action ${disabled ? "disabled" : ""}>${escapeHtml(actionText)}</button>
         </span>
@@ -536,11 +536,11 @@
       lineupFormation.classList.toggle("green", Boolean(formation));
     }
     if (captainChip) {
-      captainChip.textContent = captain ? `C ${captain.shortName || captain.name}` : "Captain TBC";
+      captainChip.textContent = captain ? `C ${displayPlayerName(captain)}` : "Captain TBC";
       captainChip.classList.toggle("green", Boolean(captain));
     }
     if (viceChip) {
-      viceChip.textContent = vice ? `VC ${vice.shortName || vice.name}` : "Vice TBC";
+      viceChip.textContent = vice ? `VC ${displayPlayerName(vice)}` : "Vice TBC";
       viceChip.classList.toggle("green", Boolean(vice));
     }
 
@@ -604,7 +604,7 @@
       </div>
       <div class="spotlight-copy">
         <span class="spotlight-kicker">${isDifferential ? "Under-5% differential" : "Scout watchlist"}</span>
-        <h3>${escapeHtml(player.name)}</h3>
+        <h3 title="${escapeHtml(player.name || displayPlayerName(player))}">${escapeHtml(displayPlayerName(player))}</h3>
         <p>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</p>
         <div class="spotlight-stats">
           <span>${escapeHtml(player.position)}</span>
@@ -646,12 +646,12 @@
     const isVice = player.id === state.viceId;
     const role = isCaptain ? "C" : isVice ? "VC" : "";
     return `
-      <button class="pitch-player ${isCaptain ? "is-captain" : ""} ${isVice ? "is-vice" : ""}" type="button" data-captain-player="${escapeHtml(player.id)}" title="Set ${escapeHtml(player.shortName || player.name)} as captain">
+      <button class="pitch-player ${isCaptain ? "is-captain" : ""} ${isVice ? "is-vice" : ""}" type="button" data-captain-player="${escapeHtml(player.id)}" title="Set ${escapeHtml(displayPlayerName(player))} as captain">
         ${role ? `<span class="pitch-role">${role}</span>` : ""}
         <span class="player-shirt pitch-shirt ${shirtClass(player)}" ${shirtStyle(player)} aria-hidden="true">
           <span>${escapeHtml(teamInitials(player))}</span>
         </span>
-        <strong>${escapeHtml(player.shortName || shortPlayerName(player.name))}</strong>
+        <strong>${escapeHtml(displayPitchName(player))}</strong>
         <span>${escapeHtml(player.position)} - ${escapeHtml(player.price || "TBC")}</span>
       </button>
     `;
@@ -783,7 +783,7 @@
           <span>${escapeHtml(teamInitials(player))}</span>
         </span>
         <div class="xi-card-copy">
-          <strong>${escapeHtml(player.name)}</strong>
+          <strong title="${escapeHtml(player.name || displayPlayerName(player))}">${escapeHtml(displayPlayerName(player))}</strong>
           <span>${escapeHtml(player.team || "Team TBC")} - ${escapeHtml(player.fixture || "Fixture TBC")}</span>
         </div>
         <div class="xi-card-meta">
@@ -794,7 +794,7 @@
           <button class="role-button ${isCaptain ? "active" : ""}" type="button" data-captain-player="${escapeHtml(player.id)}" ${isStarter ? "" : "disabled"} aria-pressed="${isCaptain}">C</button>
           <button class="role-button ${isVice ? "active" : ""}" type="button" data-vice-player="${escapeHtml(player.id)}" ${isStarter ? "" : "disabled"} aria-pressed="${isVice}">VC</button>
           <button class="ghost-mini" type="button" data-toggle-starter="${escapeHtml(player.id)}" ${canMoveToStart ? "" : "disabled"}>${isStarter ? "Bench" : "Start"}</button>
-          <button class="remove-player" type="button" data-remove-player="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(player.name)}">&times;</button>
+          <button class="remove-player" type="button" data-remove-player="${escapeHtml(player.id)}" aria-label="Remove ${escapeHtml(displayPlayerName(player))}">&times;</button>
         </div>
       </article>
     `;
@@ -831,7 +831,7 @@
       return { ok: false, label: "Full", message: `Your squad already has ${rules.squadSize} players.` };
     }
     if (player.status && ["transferred", "eliminated"].includes(player.status)) {
-      return { ok: false, label: "Unavailable", message: `${player.name} is marked as ${player.status}.` };
+      return { ok: false, label: "Unavailable", message: `${displayPlayerName(player)} is marked as ${player.status}.` };
     }
     if (player.isEliminated) {
       return { ok: false, label: "Eliminated", message: `${player.team} is marked as eliminated.` };
@@ -847,7 +847,7 @@
     }
     const nextCost = squadCost(state.selectedXi) + priceNumber(player.price);
     if (nextCost > rules.budget + 0.0001) {
-      return { ok: false, label: "Over budget", message: `Adding ${player.name} would exceed the $${rules.budget.toFixed(1)}m budget.` };
+      return { ok: false, label: "Over budget", message: `Adding ${displayPlayerName(player)} would exceed the $${rules.budget.toFixed(1)}m budget.` };
     }
     return { ok: true, label: "Add" };
   }
@@ -1046,15 +1046,17 @@
 
   function fillDifferentialForm(player) {
     state.selectedDifferential = player;
+    const displayName = displayPlayerName(player);
+    const officialName = player.name && player.name !== displayName ? `Official FIFA name: ${player.name}.` : "";
     const values = {
-      name: player.name || "",
+      name: displayName,
       position: player.position || "MID",
       ownership: player.ownership ?? "",
       price: player.price || "",
       team: player.team || "",
       fixture: player.fixture || "",
       form: player.form || "",
-      context: player.context || (player.status ? `Status: ${player.status}` : "")
+      context: [officialName, player.context || (player.status ? `Status: ${player.status}` : "")].filter(Boolean).join(" ")
     };
 
     Object.entries(values).forEach(([key, value]) => {
@@ -1102,6 +1104,63 @@
       .slice(0, 3)
       .toUpperCase();
     return letters || "WCF";
+  }
+
+  function displayPlayerName(player) {
+    if (!player) return "Unknown player";
+    const aliases = Array.isArray(player.aliases) ? player.aliases.filter(Boolean) : [];
+    const alias = aliases.find((value) => isFriendlyPlayerName(value, player.name));
+    if (alias) return cleanDisplayName(alias);
+
+    if (isFriendlyPlayerName(player.shortName, player.name)) {
+      return cleanDisplayName(player.shortName);
+    }
+
+    return simplifyPlayerName(player.name) || cleanDisplayName(player.name) || "Unknown player";
+  }
+
+  function displayPitchName(player) {
+    const name = displayPlayerName(player);
+    return name.length <= 16 ? name : shortPlayerName(name);
+  }
+
+  function playerForReport(player, extra = {}) {
+    if (!player) return null;
+    const displayName = displayPlayerName(player);
+    return {
+      ...player,
+      ...extra,
+      name: displayName,
+      displayName,
+      officialName: player.name
+    };
+  }
+
+  function isFriendlyPlayerName(value, fullName) {
+    const name = cleanDisplayName(value);
+    if (!name || normalizeSearch(name) === "unknown") return false;
+    const words = name.split(/\s+/).filter(Boolean);
+    if (words.length > 3) return false;
+    if (name.length > 30) return false;
+    if (words.length >= 3 && /\b(al|bin|binti|ibn|da|de|del|do|dos|das)\b/i.test(name)) return false;
+    return true;
+  }
+
+  function simplifyPlayerName(name) {
+    const cleanName = cleanDisplayName(name);
+    const parts = cleanName.split(/\s+/).filter(Boolean);
+    if (parts.length <= 3) return cleanName;
+
+    const particlePattern = /^(al|bin|binti|ibn|da|de|del|do|dos|das|la|le|van|von)$/i;
+    const compact = parts.filter((part, index) => index === 0 || !particlePattern.test(part));
+    if (compact.length >= 2) {
+      return cleanDisplayName(`${compact[0]} ${compact[compact.length - 1]}`);
+    }
+    return cleanDisplayName(parts.slice(0, 2).join(" "));
+  }
+
+  function cleanDisplayName(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
   }
 
   function shortPlayerName(name) {
