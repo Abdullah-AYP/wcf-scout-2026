@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="WCF Scout 2026 social preview">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#03120b"/>
+      <stop offset=".58" stop-color="#0a2b1d"/>
+      <stop offset="1" stop-color="#06120d"/>
+    </linearGradient>
+    <linearGradient id="mark" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#00d67a"/>
+      <stop offset=".58" stop-color="#00d9ff"/>
+      <stop offset="1" stop-color="#ffcb45"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g opacity=".16">
+    <path d="M0 105h1200M0 210h1200M0 315h1200M0 420h1200M0 525h1200" stroke="#baf7d1" stroke-width="2"/>
+    <path d="M120 0v630M240 0v630M360 0v630M480 0v630M600 0v630M720 0v630M840 0v630M960 0v630M1080 0v630" stroke="#baf7d1" stroke-width="2"/>
+  </g>
+  <rect x="70" y="72" width="1060" height="486" rx="34" fill="#071811" stroke="#1c5f42" stroke-width="3"/>
+  <rect x="98" y="100" width="1004" height="430" rx="28" fill="#0a6f41"/>
+  <path d="M600 100v430M98 315h1004" stroke="#eaffef" stroke-width="4" opacity=".78"/>
+  <circle cx="600" cy="315" r="78" fill="none" stroke="#eaffef" stroke-width="4" opacity=".72"/>
+  <rect x="98" y="197" width="150" height="236" fill="none" stroke="#eaffef" stroke-width="4" opacity=".62"/>
+  <rect x="952" y="197" width="150" height="236" fill="none" stroke="#eaffef" stroke-width="4" opacity=".62"/>
+  <rect x="132" y="132" width="96" height="96" rx="24" fill="url(#mark)"/>
+  <text x="180" y="190" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="900" fill="#03120b">WCF</text>
+  <text x="132" y="299" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="900" fill="#ffffff">WCF Scout 2026</text>
+  <text x="136" y="360" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#c7f3d9">Fantasy differential finder and captaincy desk</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="800">
+    <rect x="136" y="405" width="214" height="54" rx="27" fill="#eaffef"/>
+    <text x="243" y="440" text-anchor="middle" fill="#06120d">Player pool</text>
+    <rect x="372" y="405" width="214" height="54" rx="27" fill="#123522" stroke="#47d98b" stroke-width="2"/>
+    <text x="479" y="440" text-anchor="middle" fill="#eaffef">Squads</text>
+    <rect x="608" y="405" width="238" height="54" rx="27" fill="#352812" stroke="#ffcb45" stroke-width="2"/>
+    <text x="727" y="440" text-anchor="middle" fill="#ffe4a3">Captaincy</text>
+  </g>
+</svg>
