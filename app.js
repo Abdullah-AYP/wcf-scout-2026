@@ -77,18 +77,11 @@
     context: "Good chance creation floor but goal threat can be streaky. Netherlands expected to dominate possession."
   };
 
-  const sampleXiNames = [
-    "Gianluigi Donnarumma",
-    "Achraf Hakimi",
-    "Theo Hernandez",
-    "Alphonso Davies",
-    "Jude Bellingham",
-    "Xavi Simons",
-    "Jamal Musiala",
-    "Federico Valverde",
-    "Joshua Kimmich",
-    "Kylian Mbappe",
-    "Harry Kane"
+  const sampleSquadContexts = [
+    "Random sample squad. Prioritize minutes security, set pieces, fixture control, and late kickoff flexibility.",
+    "Random sample squad for captaincy testing. Compare premium safety against low-owned upside.",
+    "Random sample squad. Look for reliable starters, attacking roles, and clean-sheet routes.",
+    "Random sample squad. Treat rotation risk and ownership leverage as key tiebreakers."
   ];
 
   init();
@@ -115,12 +108,12 @@
     if (lineupPitch) lineupPitch.addEventListener("click", handleXiClick);
 
     document.getElementById("load-differential-sample").addEventListener("click", () => {
-      fillDifferentialForm(sampleDifferential);
+      loadRandomDifferentialSample();
     });
 
     document.getElementById("load-xi-sample").addEventListener("click", () => {
       loadSampleXi();
-      captaincyForm.elements.context.value = "MD2. Prioritize minutes security, set pieces, fixture control, and late kickoff flexibility.";
+      captaincyForm.elements.context.value = randomChoice(sampleSquadContexts);
     });
 
     document.getElementById("clear-xi").addEventListener("click", () => {
@@ -440,13 +433,15 @@
 
     state.selectedXi.push(player);
 
-    if (canStartPlayer(player).ok) {
+    if (options.autoStart !== false && canStartPlayer(player).ok) {
       state.starterIds.push(player.id);
     }
 
     ensureCaptaincy();
-    persistSquad();
-    renderSelectedXi();
+    if (!options.silent) {
+      persistSquad();
+      renderSelectedXi();
+    }
     return true;
   }
 
@@ -669,22 +664,110 @@
     }, {});
   }
 
+  function loadRandomDifferentialSample() {
+    const candidates = state.players
+      .filter((player) => sampleEligiblePlayer(player))
+      .sort((a, b) => ownershipSortValue(a.ownership) - ownershipSortValue(b.ownership));
+    const lowOwned = candidates.filter((player) => ownershipSortValue(player.ownership) <= 8);
+    const player = randomChoice(lowOwned.length ? lowOwned : candidates);
+
+    if (!player) {
+      fillDifferentialForm(sampleDifferential);
+      return;
+    }
+
+    fillDifferentialForm({
+      ...player,
+      context: "Randomized sample from the FIFA fantasy player pool. Add any extra rotation, role, or eye-test notes before analyzing."
+    });
+  }
+
   function loadSampleXi() {
-    state.selectedXi = [];
-    state.starterIds = [];
-    state.captainId = "";
-    state.viceId = "";
+    resetSquadDraft();
 
-    const preferredPlayers = sampleXiNames
-      .map((name) => state.players.find((player) => player.name === name))
-      .filter(Boolean);
+    if (!buildRandomSampleSquad()) {
+      resetSquadDraft();
+      fillSquadByRules();
+      setRandomStartersFromSquad();
+    }
 
-    preferredPlayers.forEach((player) => addPlayerToSquad(player, { silent: true }));
-    fillSquadByRules();
     ensureCaptaincy();
     persistSquad();
     renderSelectedXi();
     renderPlayerResults("squad");
+  }
+
+  function buildRandomSampleSquad() {
+    if (!state.players.length) return false;
+
+    const rules = getRules();
+    const attempts = 160;
+    const positionSlots = POSITION_ORDER.flatMap((position) => {
+      return Array.from({ length: rules.positionTargets[position] || 0 }, () => position);
+    });
+
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      resetSquadDraft();
+      const positionsToFill = shuffle(positionSlots);
+
+      const filled = positionsToFill.every((position) => {
+        const candidates = state.players
+          .filter((player) => player.position === position)
+          .filter((player) => sampleEligiblePlayer(player))
+          .filter((player) => playerAddState(player).ok)
+          .sort((a, b) => {
+            return priceNumber(a.price) - priceNumber(b.price)
+              || ownershipSortValue(a.ownership) - ownershipSortValue(b.ownership)
+              || String(a.name).localeCompare(String(b.name));
+          });
+        const poolSize = Math.min(candidates.length, Math.max(8, Math.ceil(candidates.length * 0.28)));
+        const candidate = randomChoice(candidates.slice(0, poolSize));
+        return candidate ? addPlayerToSquad(candidate, { silent: true, autoStart: false }) : false;
+      });
+
+      if (!filled || state.selectedXi.length !== rules.squadSize) continue;
+
+      if (setRandomStartersFromSquad()) return true;
+    }
+
+    resetSquadDraft();
+    return false;
+  }
+
+  function resetSquadDraft() {
+    state.selectedXi = [];
+    state.starterIds = [];
+    state.captainId = "";
+    state.viceId = "";
+  }
+
+  function setRandomStartersFromSquad() {
+    const rules = getRules();
+    const formations = shuffle(rules.allowedFormations);
+
+    for (const formation of formations) {
+      const [DEF, MID, FWD] = formation.split("-").map(Number);
+      const starterTargets = { GK: 1, DEF, MID, FWD };
+      const hasEnoughPlayers = POSITION_ORDER.every((position) => {
+        return state.selectedXi.filter((player) => player.position === position).length >= (starterTargets[position] || 0);
+      });
+
+      if (!hasEnoughPlayers) continue;
+
+      state.starterIds = POSITION_ORDER.flatMap((position) => {
+        return shuffle(state.selectedXi.filter((player) => player.position === position))
+          .slice(0, starterTargets[position] || 0)
+          .map((player) => player.id);
+      });
+
+      ensureCaptaincy();
+      if (validateLineup().canAnalyze) return true;
+    }
+
+    state.starterIds = [];
+    state.captainId = "";
+    state.viceId = "";
+    return false;
   }
 
   function renderSquadCard(player, isStarter) {
@@ -1041,6 +1124,24 @@
     return String(value || "wcf").split("").reduce((hash, char) => {
       return ((hash << 5) - hash + char.charCodeAt(0)) >>> 0;
     }, 0);
+  }
+
+  function sampleEligiblePlayer(player) {
+    return !player.isEliminated && !["transferred", "eliminated"].includes(String(player.status || "").toLowerCase());
+  }
+
+  function randomChoice(items) {
+    if (!Array.isArray(items) || !items.length) return null;
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  function shuffle(items) {
+    const copy = [...items];
+    for (let index = copy.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+    }
+    return copy;
   }
 
   function normalizeSearch(value) {
