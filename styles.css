@@ -437,29 +437,37 @@ h3 {
 
 .player-results {
   display: grid;
-  gap: 8px;
+  align-items: start;
+  gap: 12px;
+  grid-auto-rows: max-content;
   max-height: 360px;
   overflow: auto;
   padding-right: 2px;
   min-width: 0;
 }
 
+#differential-player-results {
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+  max-height: 470px;
+}
+
 .player-option {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
-  gap: 10px;
-  align-items: center;
+  grid-template-columns: 50px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 14px;
   background:
     linear-gradient(135deg, rgba(0, 214, 122, 0.055), transparent 48%),
     var(--surface);
-  padding: 10px;
+  min-height: 124px;
+  padding: 14px;
   color: var(--ink);
   text-align: left;
   min-width: 0;
-  overflow: hidden;
+  overflow: visible;
   transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
@@ -476,11 +484,25 @@ h3 {
 
 .player-main {
   display: grid;
-  gap: 4px;
+  grid-column: 2;
+  grid-row: 1;
+  align-content: start;
+  gap: 6px;
   min-width: 0;
 }
 
-.player-main strong,
+.player-main strong {
+  display: -webkit-box;
+  min-height: 2.4em;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
 .xi-card strong {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -547,6 +569,18 @@ h3 {
   min-width: 0;
 }
 
+.player-meta {
+  grid-column: 2;
+  grid-row: 2;
+  justify-content: flex-start;
+  align-self: start;
+}
+
+.player-option .player-shirt {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
 .mini-pill,
 .mini-action,
 .budget-pill {
@@ -596,7 +630,7 @@ h3 {
 
 .player-action {
   justify-content: center;
-  min-width: 72px;
+  min-width: 88px;
   transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
 }
 
@@ -646,8 +680,6 @@ h3 {
 }
 
 #captaincy-panel .player-option {
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: start;
   max-width: 100%;
 }
 
@@ -1520,7 +1552,15 @@ textarea:focus {
   .player-meta,
   .xi-card-meta,
   .position-counts {
+    grid-column: auto;
+    grid-row: auto;
     justify-content: flex-start;
+  }
+
+  .player-main,
+  .player-option .player-shirt {
+    grid-column: auto;
+    grid-row: auto;
   }
 
   .xi-card-meta {
