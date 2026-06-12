@@ -1,48 +1,48 @@
 # WCF Scout 2026
 
-WCF Scout 2026 is an unofficial fantasy football scouting app for FIFA World Cup Fantasy 2026.
+WCF Scout 2026 is a fantasy football scouting app for FIFA World Cup Fantasy 2026.
 
-Live app: https://wcfscout.app
+Use it here: https://wcfscout.app
 
-It helps fantasy managers search the player pool, find low-owned differentials, build a legal 15-player squad, and compare captaincy options with AI-assisted scouting reports.
+The app helps fantasy managers search the player pool, discover low-owned picks, build a legal squad, and compare captaincy options.
 
-## Highlights
+## What You Can Do
 
-- Search FIFA fantasy players by name, known football name, position, or country.
-- Browse all World Cup countries and filter each country pool.
-- Sort player pools from lowest selected percentage to highest selected percentage.
-- Spot under-5% differential punts.
-- Build a legal 15-player fantasy squad with budget, country-limit, and position checks.
+- Search players by name, position, or country.
+- Browse all 48 World Cup countries.
+- View country player pools sorted from lowest selected percentage to highest selected percentage.
+- Find hidden differentials and under-5% punts.
+- Build a 15-player fantasy squad with budget, country-limit, and position checks.
 - Set starters, captain, and vice-captain on a pitch-style layout.
-- Compare captaincy options using player role, fixture, ownership, price, and fantasy scoring context.
-- Use light mode or dark mode.
-- See friendly display names while keeping official FIFA names searchable.
+- Run an AI-assisted scout report for differentials and captaincy choices.
+- Switch between light and dark mode.
 
 ## Differential Scout
 
-The Differential Scout is for checking one player quickly.
+Use the Differential Scout when you want to check one player.
 
-Pick a player from the FIFA fantasy pool, review their price, ownership, country, position, fixture, and notes, then generate a scoring-aware report. The report focuses on upside, risk, scouting-bonus eligibility, and whether the player is worth considering as a low-owned pick.
+Search for a player, spotlight them, and run the report. The app looks at their position, price, selected percentage, country, fixture, and context to help judge whether they are worth considering.
 
-## Squad Builder + Captaincy Optimizer
+## Squad Builder
 
-The squad builder helps you create a legal World Cup Fantasy squad before running captaincy analysis.
+Use the Squad Builder to create your fantasy team.
 
-It tracks:
+The app helps track:
 
-- Squad size
-- Budget
-- Position limits
-- Country limits
-- Starters and bench
-- Captain and vice-captain
-- Valid formations
+- squad size
+- budget
+- position limits
+- country limits
+- starters
+- bench players
+- captain
+- vice-captain
 
-The pitch view makes it easier to see the XI before comparing captaincy options.
+The pitch view makes it easier to see your starting XI and captaincy setup.
 
 ## Player Search
 
-Some FIFA feed records use full legal names, so the app supports more familiar football names and aliases.
+Some FIFA player names are stored as full legal names, so the app includes football-name aliases for easier searching.
 
 Examples:
 
@@ -51,49 +51,15 @@ vitinha
 bruno fernandes
 joao cancelo
 nuno mendes
-ederson
 ```
 
-Search also handles accents, so users can type plain letters and still find players with accented names.
+The search also handles accented names, so users can type plain letters and still find players with accents in the official feed.
 
-## Data And AI
+## Data
 
 Player names, countries, positions, prices, selected percentages, fixtures, and fantasy rules are loaded from FIFA's public World Cup Fantasy data feed.
 
-The app distinguishes between:
-
-- FIFA fantasy records
-- Selectable fantasy players
-
-If the live FIFA feed is unavailable or stale, the app clearly labels demo data and disables AI scouting recommendations until live data returns.
-
-AI reports are powered by GitHub Models through a server-side endpoint. The token is never exposed in the browser.
-
-## Production Safeguards
-
-The public AI endpoint includes:
-
-- Persistent per-IP rate limiting for 5 AI reports every 10 minutes
-- Request body size limits
-- Strict request schema validation
-- Context truncation before model calls
-- Friendly rate-limit and quota messages
-- Demo-data blocking for AI recommendations
-- FIFA feed diagnostics for record counts, duplicate IDs, missing fields, status values, and selectable-player count
-
-## Tech Stack
-
-- HTML, CSS, and vanilla JavaScript
-- Node.js serverless API routes
-- FIFA World Cup Fantasy public data feed
-- GitHub Models for AI-assisted scouting
-- Vercel deployment
-
-## Status
-
-This is an independent fan project built for fantasy football planning and experimentation. It is not affiliated with FIFA.
-
-Unofficial fan-made scouting tool. Not affiliated with, endorsed by, or sponsored by FIFA. Player data is sourced from the public FIFA Fantasy feed and may change.
+If FIFA changes the feed, some player data may update or behave differently.
 
 ## Credits
 

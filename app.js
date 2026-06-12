@@ -35,7 +35,6 @@
   const tabs = document.querySelectorAll(".tab-button");
   const panels = {
     differential: document.getElementById("differential-panel"),
-    squad: document.getElementById("captaincy-panel"),
     captaincy: document.getElementById("captaincy-panel")
   };
   const differentialForm = document.getElementById("differential-form");
@@ -45,10 +44,6 @@
   const copyButton = document.getElementById("copy-report");
   const modelChip = document.getElementById("model-chip");
   const themeButton = document.getElementById("theme-toggle");
-  const refreshButton = document.getElementById("refresh-data");
-  const lastUpdated = document.getElementById("last-updated");
-  const liveStatusDot = document.getElementById("live-status-dot");
-  const liveStatusText = document.getElementById("live-status-text");
   const dataSourceLine = document.getElementById("data-source-line");
   const dataWarningBanner = document.getElementById("data-warning-banner");
   const diffSearch = document.getElementById("differential-player-search");
@@ -100,9 +95,6 @@
 
     if (themeButton) {
       themeButton.addEventListener("click", toggleTheme);
-    }
-    if (refreshButton) {
-      refreshButton.addEventListener("click", () => loadPlayers({ forceRefresh: true }));
     }
 
     diffSearch.addEventListener("input", () => renderPlayerResults("differential"));
@@ -198,7 +190,10 @@
 
   function initTheme() {
     const savedTheme = safeLocalStorageGet("wcf-theme");
-    applyTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : "dark", false);
+    const systemTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+    applyTheme(savedTheme === "dark" || savedTheme === "light" ? savedTheme : systemTheme, false);
   }
 
   function toggleTheme() {
@@ -214,11 +209,6 @@
       themeButton.title = theme === "dark" ? "Switch to light mode" : "Switch to dark mode";
       const label = themeButton.querySelector(".theme-toggle-label");
       if (label) label.textContent = theme === "dark" ? "Light" : "Dark";
-      const icon = themeButton.querySelector("[data-lucide]");
-      if (icon) {
-        icon.dataset.lucide = theme === "dark" ? "sun" : "moon";
-        if (window.renderWcfIcons) window.renderWcfIcons();
-      }
     }
 
     if (persist) {
@@ -238,10 +228,8 @@
     }
   }
 
-  async function loadPlayers(options = {}) {
+  async function loadPlayers() {
     let data;
-    setFeedStatus("loading");
-    if (refreshButton) refreshButton.disabled = true;
 
     try {
       const response = await fetch("/api/players");
@@ -252,16 +240,12 @@
       state.aiEnabled = false;
       dataSourceLine.textContent = error.message || "Could not load player data.";
       dataSourceLine.classList.add("warning");
-      setFeedStatus("error");
-      updateLastUpdated();
       renderDataWarning({ warning: error.message || "Could not load live FIFA data.", demoData: true });
       renderEmptyResults(diffResults, "Player pool unavailable.");
       renderEmptyResults(squadResults, "Player pool unavailable.");
       renderSelectedXi();
       setBusy(false);
       return;
-    } finally {
-      if (refreshButton) refreshButton.disabled = false;
     }
 
     state.players = Array.isArray(data.players) ? data.players : [];
@@ -270,8 +254,6 @@
     state.aiEnabled = Boolean(data.aiEnabled && data.liveDataAvailable && !data.demoData && !data.stale);
     dataSourceLine.textContent = playerSourceLabel(data);
     dataSourceLine.classList.toggle("warning", !state.aiEnabled || Boolean(data.warning || data.source === "sample"));
-    setFeedStatus(state.aiEnabled ? "live" : "blocked");
-    updateLastUpdated(data.loadedAt);
     renderDataWarning(data);
 
     try {
@@ -292,34 +274,9 @@
   function setActiveTab(tabName) {
     state.activeTab = tabName;
     tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabName));
-    panels.differential.classList.toggle("active", tabName === "differential");
-    panels.captaincy.classList.toggle("active", tabName === "squad" || tabName === "captaincy");
-    document.body.dataset.view = tabName;
-  }
-
-  function setFeedStatus(status) {
-    if (!liveStatusDot || !liveStatusText) return;
-    liveStatusDot.dataset.status = status;
-    liveStatusText.textContent = {
-      loading: "Checking feed",
-      live: "Live FIFA feed",
-      blocked: "Demo data",
-      error: "Feed unavailable"
-    }[status] || "Feed status";
-  }
-
-  function updateLastUpdated(value) {
-    if (!lastUpdated) return;
-    if (!value) {
-      lastUpdated.textContent = "Updated --";
-      return;
-    }
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      lastUpdated.textContent = "Updated --";
-      return;
-    }
-    lastUpdated.textContent = `Updated ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    Object.entries(panels).forEach(([name, panel]) => {
+      panel.classList.toggle("active", name === tabName);
+    });
   }
 
   function playerSourceLabel(data) {
@@ -328,8 +285,8 @@
     const selectableCount = diagnostics.selectablePlayerCount;
     const source = data.sourceLabel || "Player data";
     const countLabel = Number.isFinite(Number(selectableCount))
-      ? `${rawCount} FIFA Fantasy feed records loaded, ${selectableCount} selectable after status checks`
-      : `${rawCount} FIFA Fantasy feed records loaded`;
+      ? `${rawCount} FIFA fantasy records, ${selectableCount} selectable players`
+      : `${rawCount} FIFA fantasy records`;
     return data.warning ? `${source} - ${countLabel} - ${data.warning}` : `${source} - ${countLabel}`;
   }
 
@@ -426,7 +383,6 @@
 
   function renderPlayerOption(player, target, action) {
     const selected = state.selectedXi.some((item) => item.id === player.id);
-    const activeDifferential = target === "differential" && state.selectedDifferential?.id === player.id;
     const addState = target === "squad" ? playerAddState(player) : { ok: true, label: action };
     const disabled = target === "squad" && (selected || !addState.ok);
     const actionText = selected && target === "squad" ? "Added" : addState.label || action;
@@ -434,21 +390,19 @@
     const officialTitle = player.name && player.name !== displayName ? ` title="${escapeHtml(player.name)}"` : "";
 
     return `
-      <article class="player-option ${disabled ? "is-disabled" : ""} ${(target === "squad" && selected) || activeDifferential ? "is-selected" : ""}" data-player-id="${escapeHtml(player.id)}" data-target="${target}">
-        <span class="player-cell player-identity">
-          <span class="team-flag" aria-hidden="true">${escapeHtml(teamInitials(player))}</span>
-          <span class="player-main">
-            <strong${officialTitle}>${escapeHtml(displayName)}</strong>
-            <span>${escapeHtml(player.name && player.name !== displayName ? player.name : player.team || "Team TBC")}</span>
-          </span>
+      <article class="player-option ${disabled ? "is-disabled" : ""}" data-player-id="${escapeHtml(player.id)}" data-target="${target}">
+        <span class="player-shirt ${shirtClass(player)}" ${shirtStyle(player)} aria-hidden="true">
+          <span>${escapeHtml(teamInitials(player))}</span>
         </span>
-        <span class="player-cell"><span class="position-tag">${escapeHtml(player.position || "TBC")}</span></span>
-        <span class="player-cell">${escapeHtml(player.teamAbbr || player.team || "Team TBC")}</span>
-        <span class="player-cell fixture-cell">${escapeHtml(player.fixture || "Fixture TBC")}</span>
-        <span class="player-cell number-cell">${escapeHtml(player.price || "TBC")}</span>
-        <span class="player-cell number-cell ${Number(player.ownership) < 5 ? "green-text" : ""}">${escapeHtml(ownershipText(player.ownership))}</span>
-        <span class="player-cell action-cell">
-          ${player.status && player.status !== "playing" ? `<span class="status-tag error" title="${escapeHtml(player.status)}">${escapeHtml(rowStatusLabel(player.status))}</span>` : ""}
+        <span class="player-main">
+          <strong${officialTitle}>${escapeHtml(displayName)}</strong>
+          <span>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</span>
+        </span>
+        <span class="player-meta">
+          <span class="mini-pill">${escapeHtml(player.position)}</span>
+          <span class="mini-pill">${escapeHtml(player.price || "Price TBC")}</span>
+          <span class="mini-pill ${Number(player.ownership) < 5 ? "green" : ""}">${escapeHtml(ownershipText(player.ownership))}</span>
+          ${target === "squad" && player.status && player.status !== "playing" ? `<span class="mini-pill red">${escapeHtml(player.status)}</span>` : ""}
           <button class="mini-action player-action ${!addState.ok && target === "squad" ? "muted" : ""}" type="button" data-player-action ${disabled ? "disabled" : ""}>${escapeHtml(actionText)}</button>
         </span>
       </article>
@@ -651,14 +605,17 @@
 
   function renderDifferentialSpotlight(player = state.selectedDifferential) {
     if (!differentialSpotlight) return;
-    document.body.classList.toggle("has-selected-player", Boolean(player));
 
     if (!player) {
       differentialSpotlight.innerHTML = `
+        <div class="spotlight-pitch" aria-hidden="true">
+          <span class="spotlight-circle"></span>
+          <span class="spotlight-box"></span>
+        </div>
         <div class="spotlight-copy">
-          <span class="spotlight-kicker">Player profile</span>
-          <h3>Select a player to view their profile</h3>
-          <p>Use the table to choose a differential candidate.</p>
+          <span class="spotlight-kicker">Touchline view</span>
+          <h3>Pick a player to light up the pitch.</h3>
+          <p>The selected differential appears here with shirt, country, price, ownership, and fixture context.</p>
         </div>
       `;
       return;
@@ -667,17 +624,24 @@
     const ownership = ownershipText(player.ownership);
     const isDifferential = Number(player.ownership) < 5;
     differentialSpotlight.innerHTML = `
+      <div class="spotlight-pitch" aria-hidden="true">
+        <span class="spotlight-circle"></span>
+        <span class="spotlight-box"></span>
+        <div class="spotlight-player">
+          <span class="hero-shirt ${shirtClass(player)}" ${shirtStyle(player)}>
+            <span>${escapeHtml(teamInitials(player))}</span>
+          </span>
+          <span class="spotlight-shadow"></span>
+        </div>
+      </div>
       <div class="spotlight-copy">
         <span class="spotlight-kicker">${isDifferential ? "Under-5% differential" : "Scout watchlist"}</span>
         <h3 title="${escapeHtml(player.name || displayPlayerName(player))}">${escapeHtml(displayPlayerName(player))}</h3>
-        <p>${escapeHtml(player.name && player.name !== displayPlayerName(player) ? player.name : "Official name matches display name")}</p>
-        <div class="profile-list">
-          <div><span>Country</span><strong>${escapeHtml(player.team || "Team TBC")}</strong></div>
-          <div><span>Fixture</span><strong>${escapeHtml(player.fixture || "Fixture TBC")}</strong></div>
-          <div><span>Position</span><strong>${escapeHtml(player.position || "TBC")}</strong></div>
-          <div><span>Price</span><strong>${escapeHtml(player.price || "Price TBC")}</strong></div>
-          <div><span>Selected</span><strong class="${Number(player.ownership) < 5 ? "green-text" : ""}">${escapeHtml(ownership)}</strong></div>
-          <div><span>Status</span><strong>${escapeHtml(player.status || "playing")}</strong></div>
+        <p>${escapeHtml([player.team, player.fixture].filter(Boolean).join(" - ") || "Fixture TBC")}</p>
+        <div class="spotlight-stats">
+          <span>${escapeHtml(player.position)}</span>
+          <span>${escapeHtml(player.price || "Price TBC")}</span>
+          <span>${escapeHtml(ownership)}</span>
         </div>
       </div>
     `;
@@ -1257,14 +1221,6 @@
     return !player.isEliminated && !["transferred", "eliminated"].includes(String(player.status || "").toLowerCase());
   }
 
-  function rowStatusLabel(status) {
-    const value = String(status || "").toLowerCase();
-    if (value === "transferred") return "Xfer";
-    if (value === "eliminated") return "Out";
-    if (value === "unavailable") return "Out";
-    return String(status || "Out");
-  }
-
   function randomChoice(items) {
     if (!Array.isArray(items) || !items.length) return null;
     return items[Math.floor(Math.random() * items.length)];
@@ -1302,7 +1258,7 @@
     resultOutput.innerHTML = `
       <div class="pitch-visual" aria-hidden="true"><span></span><span></span><span></span></div>
       <h3>${escapeHtml(title)}</h3>
-      <p>Generating report...</p>
+      <p>Building a scoring-aware scout report...</p>
     `;
   }
 
@@ -1426,8 +1382,8 @@
     }
 
     setBusy(true);
-    setStatus("Generating report...");
-    showLoading(tool === "captaincy" ? "Captaincy report" : "Scout report");
+    setStatus("Asking GitHub Models...");
+    showLoading(tool === "captaincy" ? "Optimizing captaincy" : "Analyzing differential");
 
     try {
       const response = await fetch("/api/analyze", {
@@ -1448,7 +1404,7 @@
         throw new Error(data.error || "The model request failed.");
       }
 
-      if (data.model) modelChip.textContent = `Model provider: ${friendlyModelName(data.model)}`;
+      if (data.model) modelChip.textContent = `Powered by ${friendlyModelName(data.model)}`;
       setStatus("Report generated.");
       showReport(data.report, tool);
     } catch (error) {

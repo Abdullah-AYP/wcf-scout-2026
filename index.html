@@ -1,76 +1,48 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="AI-assisted FIFA World Cup Fantasy 2026 scouting tool for differentials, squad building, and captaincy decisions.">
-    <link rel="canonical" href="https://wcfscout.app/">
-    <meta property="og:title" content="WCF Scout 2026">
-    <meta property="og:description" content="Pitchside scouting for FIFA World Cup Fantasy differentials, squads, and captaincy calls.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://wcfscout.app/">
-    <meta property="og:image" content="https://wcfscout.app/og-image.svg">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="WCF Scout 2026">
-    <meta name="twitter:description" content="Pitchside scouting for FIFA World Cup Fantasy differentials, squads, and captaincy calls.">
-    <meta name="twitter:image" content="https://wcfscout.app/og-image.svg">
     <title>WCF Scout 2026</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=scout-redesign">
+    <link rel="stylesheet" href="styles.css?v=api-hardening">
   </head>
   <body>
     <main class="app-shell">
-      <header class="app-header">
-        <div class="app-title">
+      <header class="topbar">
+        <div class="brand-block">
           <span class="brand-mark" aria-hidden="true">WCF</span>
           <div>
+            <span class="brand-eyebrow">World Cup Fantasy command center</span>
             <h1>WCF Scout 2026</h1>
-            <p>World Cup Fantasy scouting desk</p>
+            <p>Pitchside scouting for differentials, squads, and armband calls.</p>
           </div>
         </div>
-        <div class="header-meta">
-          <div class="live-status" aria-live="polite">
-            <span class="status-dot" id="live-status-dot" aria-hidden="true"></span>
-            <span id="live-status-text">Loading feed</span>
-          </div>
-          <span class="last-updated" id="last-updated">Updated --</span>
-          <button class="icon-button" type="button" id="refresh-data" aria-label="Refresh player data">
-            <span data-lucide="refresh-cw" aria-hidden="true"></span>
-            <span>Refresh</span>
-          </button>
-          <button class="icon-button theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
-            <span data-lucide="moon" aria-hidden="true"></span>
+        <div class="top-actions">
+          <span class="live-pill">FIFA fantasy data</span>
+          <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
             <span class="theme-toggle-label">Dark</span>
           </button>
         </div>
       </header>
 
-      <nav class="top-tabs" aria-label="Scout tools">
-        <button class="tab-button active" type="button" data-tab="differential">Differential Scout</button>
-        <button class="tab-button" type="button" data-tab="squad">Squad Builder</button>
-        <button class="tab-button" type="button" data-tab="captaincy">Captaincy</button>
-      </nav>
-
-      <details class="rules-strip">
-        <summary>
-          <span>Rules</span>
-          <span class="rule-chip">Scouting bonus +2 under 5%</span>
-          <span class="rule-chip captain">Captain 2x</span>
-          <span class="rule-chip">Assist +3</span>
-          <span class="rule-chip">60+ mins +2</span>
-        </summary>
-        <dl>
-          <div><dt>Goal</dt><dd>GK/DEF 6, MID 5, FWD 4</dd></div>
-          <div><dt>Clean sheet</dt><dd>GK/DEF 4, MID 1</dd></div>
-          <div><dt>Defensive work</dt><dd>Recoveries, saves, chances, shots create floor</dd></div>
-          <div><dt>Captaincy</dt><dd>Captain doubles total round score</dd></div>
-        </dl>
-      </details>
-
       <section class="workspace">
+        <aside class="sidebar">
+          <nav class="tool-tabs" aria-label="Scout tools">
+            <button class="tab-button active" type="button" data-tab="differential">Differential Scout</button>
+            <button class="tab-button" type="button" data-tab="captaincy">Captaincy Optimizer</button>
+          </nav>
+
+          <div class="rule-snapshot">
+            <h2>Scoring Snapshot</h2>
+            <dl>
+              <div><dt>Scouting bonus</dt><dd>+2 under 5%</dd></div>
+              <div><dt>Captain</dt><dd>2x round score</dd></div>
+              <div><dt>Assist</dt><dd>+3 all positions</dd></div>
+              <div><dt>60+ mins</dt><dd>+2 all positions</dd></div>
+            </dl>
+          </div>
+        </aside>
+
         <div class="data-warning-banner" id="data-warning-banner" hidden>
           <strong>Live FIFA data unavailable</strong>
           <span>Demo data is loaded, so AI scouting recommendations are disabled until the live feed returns.</span>
@@ -80,137 +52,104 @@
           <div class="panel-head">
             <div>
               <h2 id="differential-title">Differential Scout</h2>
-              <p>Find low-owned players and generate one scout report.</p>
+              <p>Search the player pool, pick a candidate, then run the scoring-aware report.</p>
             </div>
-            <button class="ghost-button" type="button" id="load-differential-sample">
-              <span data-lucide="shuffle" aria-hidden="true"></span>
-              <span>Load sample</span>
-            </button>
+            <button class="ghost-button" type="button" id="load-differential-sample">Load sample</button>
           </div>
 
-          <div class="differential-layout">
-            <aside class="filter-rail" aria-label="Player filters">
-              <div class="rail-head">
-                <h3>Filters</h3>
-                <p>Search by name, country, team code, or position.</p>
-              </div>
-              <div class="picker-controls">
-                <label>
-                  Search
-                  <input id="differential-player-search" type="search" placeholder="Player, team, position">
-                </label>
-                <label>
-                  Position
-                  <select id="differential-position-filter">
-                    <option value="">All</option>
-                    <option value="GK">GK</option>
-                    <option value="DEF">DEF</option>
-                    <option value="MID">MID</option>
-                    <option value="FWD">FWD</option>
-                  </select>
-                </label>
-                <label>
-                  Country
-                  <select id="differential-country-filter">
-                    <option value="">All countries</option>
-                  </select>
-                </label>
-              </div>
-            </aside>
-
-            <section class="player-picker player-table-panel" aria-label="Player table">
-              <div class="table-toolbar">
-                <div>
-                  <h3>Player pool</h3>
-                  <div class="data-source-line" id="data-source-line">Loading player pool...</div>
-                </div>
-              </div>
-              <div class="player-table-head" aria-hidden="true">
-                <span>Player</span>
-                <span>Pos</span>
-                <span>Team</span>
-                <span>Fixture</span>
-                <span>Price</span>
-                <span>Own</span>
-                <span></span>
-              </div>
-              <div class="player-results" id="differential-player-results"></div>
-            </section>
-
-            <aside class="player-inspector" aria-label="Selected player profile">
-              <section class="differential-spotlight" id="differential-spotlight" aria-label="Selected differential player">
-                <div class="spotlight-copy">
-                  <span class="spotlight-kicker">Player profile</span>
-                  <h3>Select a player to view their profile</h3>
-                  <p>Use the table to choose a differential candidate.</p>
-                </div>
-              </section>
-
-              <form class="input-grid inspector-form" id="differential-form">
-                <label>
-                  Player
-                  <input name="name" type="text" placeholder="e.g. Vitinha" required>
-                </label>
-                <label>
-                  Position
-                  <select name="position" required>
-                    <option value="MID">MID</option>
-                    <option value="GK">GK</option>
-                    <option value="DEF">DEF</option>
-                    <option value="FWD">FWD</option>
-                  </select>
-                </label>
-                <label>
-                  Ownership %
-                  <input name="ownership" type="number" min="0" max="100" step="0.1" placeholder="4.2" required>
-                </label>
-                <label>
-                  Price
-                  <input name="price" type="text" placeholder="$7.5m">
-                </label>
-                <label>
-                  Team
-                  <input name="team" type="text" placeholder="Portugal">
-                </label>
-                <label>
-                  Fixture
-                  <input name="fixture" type="text" placeholder="vs Canada">
-                </label>
-                <label class="wide">
-                  Form notes
-                  <textarea name="form" rows="3" placeholder="Starts, set pieces, role, minutes..."></textarea>
-                </label>
-                <label class="wide">
-                  Context
-                  <textarea name="context" rows="3" placeholder="Rotation, injuries, match state, eye-test notes..."></textarea>
-                </label>
-                <div class="form-actions wide">
-                  <button class="primary-button" type="submit" data-busy-lock>
-                    <span data-lucide="file-text" aria-hidden="true"></span>
-                    <span>Generate scout report</span>
-                  </button>
-                  <button class="ghost-button" type="reset">Clear</button>
-                </div>
-              </form>
+          <div class="player-picker" aria-label="Player search">
+            <div class="picker-controls">
+              <label>
+                Find player
+                <input id="differential-player-search" type="search" placeholder="Type a name, team, or position">
+              </label>
+              <label>
+                Position
+                <select id="differential-position-filter">
+                  <option value="">All</option>
+                  <option value="GK">GK</option>
+                  <option value="DEF">DEF</option>
+                  <option value="MID">MID</option>
+                  <option value="FWD">FWD</option>
+                </select>
+              </label>
+              <label>
+                Country
+                <select id="differential-country-filter">
+                  <option value="">All countries</option>
+                </select>
+              </label>
             </div>
+            <div class="data-source-line" id="data-source-line">Loading player pool...</div>
+            <div class="player-results" id="differential-player-results"></div>
           </div>
+
+          <section class="differential-spotlight" id="differential-spotlight" aria-label="Selected differential player">
+            <div class="spotlight-pitch" aria-hidden="true">
+              <span class="spotlight-circle"></span>
+              <span class="spotlight-box"></span>
+            </div>
+            <div class="spotlight-copy">
+              <span class="spotlight-kicker">Touchline view</span>
+              <h3>Pick a player to light up the pitch.</h3>
+              <p>The selected differential appears here with shirt, country, price, ownership, and fixture context.</p>
+            </div>
+          </section>
+
+          <form class="input-grid" id="differential-form">
+            <label>
+              Selected player
+              <input name="name" type="text" placeholder="e.g. Xavi Simons" required>
+            </label>
+            <label>
+              Position
+              <select name="position" required>
+                <option value="MID">MID</option>
+                <option value="GK">GK</option>
+                <option value="DEF">DEF</option>
+                <option value="FWD">FWD</option>
+              </select>
+            </label>
+            <label>
+              Ownership %
+              <input name="ownership" type="number" min="0" max="100" step="0.1" placeholder="4.2" required>
+            </label>
+            <label>
+              Price
+              <input name="price" type="text" placeholder="$7.5m">
+            </label>
+            <label>
+              Team
+              <input name="team" type="text" placeholder="Netherlands">
+            </label>
+            <label>
+              Fixture
+              <input name="fixture" type="text" placeholder="vs Canada">
+            </label>
+            <label class="wide">
+              Recent form
+              <textarea name="form" rows="3" placeholder="Starts regularly, takes some set pieces, 2 assists in last 4..."></textarea>
+            </label>
+            <label class="wide">
+              Extra context
+              <textarea name="context" rows="3" placeholder="Rotation risk, role, injuries, game state, eye-test notes..."></textarea>
+            </label>
+            <div class="form-actions wide">
+              <button class="primary-button" type="submit" data-busy-lock>Analyze player</button>
+              <button class="ghost-button" type="reset">Clear</button>
+            </div>
+          </form>
         </section>
 
         <section class="tool-panel" id="captaincy-panel" aria-labelledby="captaincy-title">
           <div class="panel-head">
             <div>
               <h2 id="captaincy-title">Squad Builder + Captaincy Optimizer</h2>
-              <p>Build a legal squad, set starters, then rank captaincy options.</p>
+              <p>Build a legal fantasy squad, set your starters, then rank captaincy upside.</p>
             </div>
             <div class="panel-actions">
-              <button class="ghost-button" type="button" id="load-xi-sample">
-                <span data-lucide="shuffle" aria-hidden="true"></span>
-                <span>Load sample</span>
-              </button>
-              <button class="ghost-button" type="button" id="clear-xi">
-                <span data-lucide="trash-2" aria-hidden="true"></span>
-                <span>Clear squad</span>
-              </button>
+              <button class="ghost-button" type="button" id="load-xi-sample">Load sample</button>
+              <button class="ghost-button" type="button" id="clear-xi">Clear squad</button>
             </div>
           </div>
 
@@ -221,7 +160,7 @@
                 <div class="picker-controls">
                   <label>
                     Player pool
-                    <input id="squad-player-search" type="search" placeholder="Search players">
+                    <input id="squad-player-search" type="search" placeholder="Search players to add">
                   </label>
                   <label>
                     Position
@@ -270,10 +209,7 @@
               <textarea name="context" rows="3" placeholder="MD2, late kickoff advantage, elimination stakes, rotation concerns..."></textarea>
             </label>
             <div class="form-actions">
-              <button class="primary-button" type="submit" data-busy-lock>
-                <span data-lucide="trophy" aria-hidden="true"></span>
-                <span>Generate captaincy report</span>
-              </button>
+              <button class="primary-button" type="submit" data-busy-lock>Optimize captaincy</button>
               <button class="ghost-button" type="reset">Clear</button>
             </div>
           </form>
@@ -285,26 +221,22 @@
               <h2>Scout Report</h2>
               <div class="report-status-row">
                 <p id="status-line">Ready for your first query.</p>
-                <span class="model-chip" id="model-chip">Model provider: GitHub Models</span>
+                <span class="model-chip" id="model-chip">Powered by GitHub Models</span>
               </div>
             </div>
-            <button class="ghost-button" type="button" id="copy-report" disabled>
-              <span data-lucide="copy" aria-hidden="true"></span>
-              <span>Copy</span>
-            </button>
+            <button class="ghost-button" type="button" id="copy-report" disabled>Copy</button>
           </div>
           <div id="result-output" class="empty-state">
             <div class="pitch-visual" aria-hidden="true">
               <span></span><span></span><span></span>
             </div>
             <h3>No report yet</h3>
-            <p>Generate a report from the selected player or squad.</p>
+            <p>Run either tool and the AI report will appear here.</p>
           </div>
         </section>
       </section>
       <footer class="site-footer">
         <p>Made by Abdullah Yousuf for the love of the game <span aria-hidden="true">⚽</span></p>
-        <p class="footer-disclaimer">Unofficial fan-made scouting tool. Not affiliated with, endorsed by, or sponsored by FIFA. Player data is sourced from the public FIFA Fantasy feed and may change.</p>
         <div class="footer-links">
           <a class="social-button linkedin" href="https://www.linkedin.com/in/abdullah-yousuf-140925311/" target="_blank" rel="noreferrer">
             <span class="social-icon" aria-hidden="true">in</span>
@@ -318,7 +250,6 @@
       </footer>
     </main>
 
-    <script src="icons.js?v=scout-redesign"></script>
-    <script src="app.js?v=scout-redesign"></script>
+    <script src="app.js?v=api-hardening"></script>
   </body>
 </html>
