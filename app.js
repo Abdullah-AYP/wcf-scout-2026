@@ -44,6 +44,7 @@
   const copyButton = document.getElementById("copy-report");
   const modelChip = document.getElementById("model-chip");
   const themeButton = document.getElementById("theme-toggle");
+  const guideActions = document.querySelectorAll("[data-guide-tab]");
   const dataSourceLine = document.getElementById("data-source-line");
   const dataWarningBanner = document.getElementById("data-warning-banner");
   const diffSearch = document.getElementById("differential-player-search");
@@ -96,6 +97,9 @@
     if (themeButton) {
       themeButton.addEventListener("click", toggleTheme);
     }
+    guideActions.forEach((button) => {
+      button.addEventListener("click", () => openGuideTarget(button.dataset.guideTab));
+    });
 
     diffSearch.addEventListener("input", () => renderPlayerResults("differential"));
     diffPosition.addEventListener("change", () => renderPlayerResults("differential"));
@@ -277,6 +281,27 @@
     Object.entries(panels).forEach(([name, panel]) => {
       panel.classList.toggle("active", name === tabName);
     });
+  }
+
+  function openGuideTarget(tabName) {
+    if (!panels[tabName]) return;
+
+    setActiveTab(tabName);
+
+    const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    panels[tabName].scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start"
+    });
+
+    const focusTarget = tabName === "captaincy" ? squadSearch : diffSearch;
+    window.setTimeout(() => {
+      try {
+        focusTarget.focus({ preventScroll: true });
+      } catch (error) {
+        focusTarget.focus();
+      }
+    }, prefersReducedMotion ? 0 : 260);
   }
 
   function playerSourceLabel(data) {

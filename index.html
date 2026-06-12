@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>WCF Scout 2026</title>
-    <link rel="stylesheet" href="styles.css?v=api-hardening">
+    <link rel="stylesheet" href="styles.css?v=quick-guide">
   </head>
   <body>
     <main class="app-shell">
@@ -18,12 +18,53 @@
           </div>
         </div>
         <div class="top-actions">
+          <a class="guide-link" href="#quick-guide">Guide</a>
           <span class="live-pill">FIFA fantasy data</span>
           <button class="theme-toggle" type="button" id="theme-toggle" aria-pressed="false">
             <span class="theme-toggle-label">Dark</span>
           </button>
         </div>
       </header>
+
+      <section class="quick-guide" id="quick-guide" aria-labelledby="quick-guide-title">
+        <div class="guide-intro">
+          <span class="guide-kicker">New here?</span>
+          <h2 id="quick-guide-title">How WCF Scout works</h2>
+          <p>Use the FIFA Fantasy player feed to find low-owned picks, build a legal squad, and compare captaincy options before you lock your team.</p>
+        </div>
+        <ol class="guide-steps">
+          <li>
+            <span class="step-number">1</span>
+            <div>
+              <h3>Filter the player pool</h3>
+              <p>Search by name, position, or country. Country filters help narrow the World Cup squads quickly.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">2</span>
+            <div>
+              <h3>Scout a differential</h3>
+              <p>Pick a low-owned player, check price and fixture context, then generate a short scout report.</p>
+              <button class="guide-action" type="button" data-guide-tab="differential">Open Differential Scout</button>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">3</span>
+            <div>
+              <h3>Build your squad</h3>
+              <p>Add 15 players, watch the budget and country limit, then choose your starting XI, captain, and vice-captain.</p>
+              <button class="guide-action" type="button" data-guide-tab="captaincy">Open Squad Builder</button>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">4</span>
+            <div>
+              <h3>Use reports as a second opinion</h3>
+              <p>The report summarizes upside, risk, and captaincy logic. If live FIFA data is unavailable, reports are disabled so demo data is not treated as live.</p>
+            </div>
+          </li>
+        </ol>
+      </section>
 
       <section class="workspace">
         <aside class="sidebar">
@@ -250,6 +291,6 @@
       </footer>
     </main>
 
-    <script src="app.js?v=api-hardening"></script>
+    <script src="app.js?v=quick-guide"></script>
   </body>
 </html>
